@@ -90,5 +90,5 @@ If you have suggestions or want to see a specific prompt tested, open an [issue]
 ---
 
 <p align="center">
-  <i>Made with ❤️ and Canva AI</i>
+  <i>Projects are made with ❤️ and Canva AI</i>
 </p>
