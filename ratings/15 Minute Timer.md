@@ -13,6 +13,13 @@
 
 ---
 
+## Showcase
+
+<img width="1186" height="807" alt="image" src="https://github.com/user-attachments/assets/554683b6-2a3a-499b-b33c-2a78ab43a584" />
+
+<img width="1188" height="810" alt="image" src="https://github.com/user-attachments/assets/23478b1f-5a52-4ca1-bf43-f5b5b1aabeec" />
+
+
 ## 🔍 Summary
 
 The Canva AI-generated timer meets all functional requirements, counting down from 15 minutes with both sound effects and engaging visual animations. While readability could be improved with multiple files, the single-file constraint was handled well. The code is easy to follow, and minor improvements could make it even cleaner. The addition of creative animations and color changes goes beyond a basic timer, making the project stand out.
