@@ -62,6 +62,8 @@ Each project also includes a summary review.
 ```
 canva-ai-showcase/
 ├── basic-projects/
+└────15 Minute Timer/
+   └──index.html
 ├── advanced-projects/
 ├── ratings/
 ├── README.md
