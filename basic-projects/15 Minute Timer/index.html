@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meditation Timer</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Inter', -webkit-system-font, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .timer-container {
+            text-align: center;
+            color: white;
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .timer-title {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+            letter-spacing: 0.5px;
+        }
+
+        .timer-circle {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 0 auto 3rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .timer-circle.pulsing {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+            }
+        }
+
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: 200;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .timer-button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            min-width: 120px;
+        }
+
+        .timer-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .timer-button:active {
+            transform: translateY(0);
+        }
+
+        .timer-button.primary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .timer-button.primary:hover {
+            background: white;
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .completion-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #667eea;
+            padding: 2rem 3rem;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .completion-message.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .progress-ring {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 284px;
+            height: 284px;
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.6);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 890;
+            stroke-dashoffset: 890;
+            transition: stroke-dashoffset 1s linear;
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="timer-container">
+   <h1 class="timer-title" id="timerTitle">Meditation Session</h1>
+   <div class="timer-circle" id="timerCircle">
+    <svg class="progress-ring"><circle class="progress-ring-circle" cx="142" cy="142" r="140" id="progressCircle"></circle>
+    </svg>
+    <div class="timer-display" id="timerDisplay">
+     15:00
+    </div>
+   </div>
+   <div class="timer-controls"><button class="timer-button primary" id="startBtn">Begin Meditation</button> <button class="timer-button" id="pauseBtn" style="display: none;">Pause</button> <button class="timer-button" id="resetBtn">Reset</button>
+   </div>
+  </div>
+  <div class="completion-message" id="completionMessage">
+   Meditation Complete!
+  </div>
+  <script>
+        // Default configuration
+        const defaultConfig = {
+            timer_title: "Meditation Session",
+            start_button_text: "Begin Meditation",
+            pause_button_text: "Pause",
+            reset_button_text: "Reset",
+            completion_message: "Meditation Complete!",
+            background_color: "#667eea",
+            accent_color: "#764ba2",
+            text_color: "#ffffff",
+            button_color: "#ffffff",
+            font_family: "Inter"
+        };
+
+        // Timer state
+        let timeLeft = 15 * 60; // 15 minutes in seconds
+        let totalTime = 15 * 60;
+        let timerInterval = null;
+        let isRunning = false;
+        let isPaused = false;
+
+        // DOM elements
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerCircle = document.getElementById('timerCircle');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const completionMessage = document.getElementById('completionMessage');
+        const progressCircle = document.getElementById('progressCircle');
+
+        // Format time display
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // Update progress ring
+        function updateProgress() {
+            const progress = (totalTime - timeLeft) / totalTime;
+            const circumference = 890;
+            const offset = circumference - (progress * circumference);
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        // Start timer
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                isPaused = false;
+                timerCircle.classList.add('pulsing');
+                startBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-block';
+                
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.textContent = formatTime(timeLeft);
+                    updateProgress();
+                    
+                    if (timeLeft <= 0) {
+                        completeTimer();
+                    }
+                }, 1000);
+            }
+        }
+
+        // Pause timer
+        function pauseTimer() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                isPaused = true;
+                timerCircle.classList.remove('pulsing');
+                startBtn.style.display = 'inline-block';
+                pauseBtn.style.display = 'none';
+                startBtn.textContent = 'Resume';
+            }
+        }
+
+        // Reset timer
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            isPaused = false;
+            timeLeft = totalTime;
+            timerDisplay.textContent = formatTime(timeLeft);
+            timerCircle.classList.remove('pulsing');
+            startBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            completionMessage.classList.remove('show');
+            updateProgress();
+            
+            const config = window.elementSdk?.config || defaultConfig;
+            startBtn.textContent = config.start_button_text || defaultConfig.start_button_text;
+        }
+
+        // Complete timer
+        function completeTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            timeLeft = 0;
+            timerDisplay.textContent = '00:00';
+            timerCircle.classList.remove('pulsing');
+            startBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            completionMessage.classList.add('show');
+            updateProgress();
+            
+            // Create subtle completion effect
+            timerCircle.style.background = 'rgba(255, 255, 255, 0.2)';
+            setTimeout(() => {
+                timerCircle.style.background = 'rgba(255, 255, 255, 0.1)';
+            }, 2000);
+            
+            const config = window.elementSdk?.config || defaultConfig;
+            startBtn.textContent = config.start_button_text || defaultConfig.start_button_text;
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        // Initialize display
+        timerDisplay.textContent = formatTime(timeLeft);
+        updateProgress();
+
+        // Element SDK implementation
+        async function onConfigChange(config) {
+            // Update text content
+            document.getElementById('timerTitle').textContent = config.timer_title || defaultConfig.timer_title;
+            document.getElementById('completionMessage').textContent = config.completion_message || defaultConfig.completion_message;
+            
+            // Update button text
+            if (!isRunning && !isPaused) {
+                startBtn.textContent = config.start_button_text || defaultConfig.start_button_text;
+            }
+            pauseBtn.textContent = config.pause_button_text || defaultConfig.pause_button_text;
+            resetBtn.textContent = config.reset_button_text || defaultConfig.reset_button_text;
+
+            // Update colors
+            const backgroundColor = config.background_color || defaultConfig.background_color;
+            const accentColor = config.accent_color || defaultConfig.accent_color;
+            const textColor = config.text_color || defaultConfig.text_color;
+            
+            document.body.style.background = `linear-gradient(135deg, ${backgroundColor} 0%, ${accentColor} 100%)`;
+            document.body.style.color = textColor;
+
+            // Update font
+            const fontFamily = config.font_family || defaultConfig.font_family;
+            document.body.style.fontFamily = `${fontFamily}, -webkit-system-font, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [
+                    {
+                        get: () => config.background_color || defaultConfig.background_color,
+                        set: (value) => {
+                            config.background_color = value;
+                            window.elementSdk.setConfig({ background_color: value });
+                        }
+                    },
+                    {
+                        get: () => config.accent_color || defaultConfig.accent_color,
+                        set: (value) => {
+                            config.accent_color = value;
+                            window.elementSdk.setConfig({ accent_color: value });
+                        }
+                    },
+                    {
+                        get: () => config.text_color || defaultConfig.text_color,
+                        set: (value) => {
+                            config.text_color = value;
+                            window.elementSdk.setConfig({ text_color: value });
+                        }
+                    }
+                ],
+                borderables: [],
+                fontEditable: {
+                    get: () => config.font_family || defaultConfig.font_family,
+                    set: (value) => {
+                        config.font_family = value;
+                        window.elementSdk.setConfig({ font_family: value });
+                    }
+                },
+                fontSizeable: undefined
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["timer_title", config.timer_title || defaultConfig.timer_title],
+                ["start_button_text", config.start_button_text || defaultConfig.start_button_text],
+                ["pause_button_text", config.pause_button_text || defaultConfig.pause_button_text],
+                ["reset_button_text", config.reset_button_text || defaultConfig.reset_button_text],
+                ["completion_message", config.completion_message || defaultConfig.completion_message]
+            ]);
+        }
+
+        // Initialize Element SDK
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig,
+                onConfigChange,
+                mapToCapabilities,
+                mapToEditPanelValues
+            });
+        }
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9955f2c98448a1d2',t:'MTc2MTYwNzQ4MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
