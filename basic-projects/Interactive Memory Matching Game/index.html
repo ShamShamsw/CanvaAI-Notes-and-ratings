@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Connect Memory Game</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            color: #333;
+        }
+
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .welcome-text {
+            font-size: 1.1rem;
+            color: #718096;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px 25px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            background: #4299e1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(66, 153, 225, 0.3);
+        }
+
+        .card.flipped {
+            background: white;
+            border-color: #4299e1;
+        }
+
+        .card.matched {
+            background: #48bb78;
+            border-color: #38a169;
+            cursor: default;
+        }
+
+        .card.matched:hover {
+            transform: none;
+        }
+
+        .card-back {
+            color: white;
+            font-weight: bold;
+        }
+
+        .card-front {
+            display: none;
+        }
+
+        .card.flipped .card-back {
+            display: none;
+        }
+
+        .card.flipped .card-front {
+            display: block;
+        }
+
+        .question-section {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 5px solid #4299e1;
+        }
+
+        .question-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .new-question-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+        }
+
+        .new-question-btn:hover {
+            background: #3182ce;
+        }
+
+        .reset-btn {
+            background: #ed8936;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            transition: background-color 0.2s;
+        }
+
+        .reset-btn:hover {
+            background: #dd6b20;
+        }
+
+        .success-message {
+            text-align: center;
+            background: #48bb78;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .game-board {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .card {
+                font-size: 2rem;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="game-container">
+   <div class="header">
+    <h1 class="game-title" id="gameTitle">Team Connect</h1>
+    <p class="welcome-text" id="welcomeMessage">Match the cards and answer fun questions to break the ice!</p>
+   </div>
+   <div class="stats">
+    <div class="stat-item">
+     <div class="stat-number" id="movesCount">
+      0
+     </div>
+     <div class="stat-label">
+      Moves
+     </div>
+    </div>
+    <div class="stat-item">
+     <div class="stat-number" id="matchesCount">
+      0
+     </div>
+     <div class="stat-label">
+      Matches
+     </div>
+    </div>
+    <div class="stat-item">
+     <div class="stat-number" id="timeCount">
+      0
+     </div>
+     <div class="stat-label">
+      Time (s)
+     </div>
+    </div>
+   </div>
+   <div class="success-message" id="successMessage">
+    Great job! You found all the matches! 🎉
+   </div>
+   <div class="game-board" id="gameBoard"></div>
+   <div class="question-section">
+    <div class="question-title">
+     💬 Ice Breaker Question
+    </div>
+    <div class="question-text" id="questionText">
+     What emoji best describes your morning?
+    </div><button class="new-question-btn" onclick="showNewQuestion()">New Question</button>
+   </div><button class="reset-btn" onclick="resetGame()">🔄 New Game</button>
+  </div>
+  <script>
+        // Default configuration
+        const defaultConfig = {
+            game_title: "Team Connect",
+            welcome_message: "Match the cards and answer fun questions to break the ice!",
+            success_message: "Great job! You found all the matches! 🎉"
+        };
+
+        // Game state
+        let gameState = {
+            cards: [],
+            flippedCards: [],
+            matches: 0,
+            moves: 0,
+            gameStarted: false,
+            gameTimer: null,
+            startTime: null
+        };
+
+        // Emoji pairs for the game
+        const emojiPairs = ['🚀', '💡', '🎯', '⭐', '🔥', '💪'];
+        
+        // Ice breaker questions
+        const questions = [
+            "What emoji best describes your morning?",
+            "What's a work skill you're proud of developing?",
+            "If you could have any superpower at work, what would it be?",
+            "What's your favorite way to celebrate small wins?",
+            "What's one thing that always makes you smile during the workday?",
+            "If your job was a movie genre, what would it be?",
+            "What's the best piece of advice you've received recently?",
+            "What's your go-to productivity hack?",
+            "If you could learn any new skill instantly, what would it be?",
+            "What's something you're looking forward to this week?"
+        ];
+
+        let currentQuestionIndex = 0;
+
+        // Initialize the game
+        function initGame() {
+            createCards();
+            shuffleCards();
+            renderCards();
+            showNewQuestion();
+        }
+
+        function createCards() {
+            gameState.cards = [];
+            // Create pairs of emojis
+            emojiPairs.forEach(emoji => {
+                gameState.cards.push({ emoji, id: Math.random(), matched: false });
+                gameState.cards.push({ emoji, id: Math.random(), matched: false });
+            });
+        }
+
+        function shuffleCards() {
+            for (let i = gameState.cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gameState.cards[i], gameState.cards[j]] = [gameState.cards[j], gameState.cards[i]];
+            }
+        }
+
+        function renderCards() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+            
+            gameState.cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.dataset.index = index;
+                cardElement.innerHTML = `
+                    <div class="card-back">?</div>
+                    <div class="card-front">${card.emoji}</div>
+                `;
+                cardElement.addEventListener('click', () => flipCard(index));
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        function flipCard(index) {
+            if (gameState.flippedCards.length >= 2) return;
+            if (gameState.cards[index].matched) return;
+            if (gameState.flippedCards.includes(index)) return;
+
+            if (!gameState.gameStarted) {
+                startGame();
+            }
+
+            const cardElement = document.querySelector(`[data-index="${index}"]`);
+            cardElement.classList.add('flipped');
+            gameState.flippedCards.push(index);
+
+            if (gameState.flippedCards.length === 2) {
+                gameState.moves++;
+                updateStats();
+                setTimeout(checkMatch, 1000);
+            }
+        }
+
+        function checkMatch() {
+            const [first, second] = gameState.flippedCards;
+            const firstCard = gameState.cards[first];
+            const secondCard = gameState.cards[second];
+
+            if (firstCard.emoji === secondCard.emoji) {
+                // Match found
+                firstCard.matched = true;
+                secondCard.matched = true;
+                gameState.matches++;
+                
+                const firstElement = document.querySelector(`[data-index="${first}"]`);
+                const secondElement = document.querySelector(`[data-index="${second}"]`);
+                firstElement.classList.add('matched');
+                secondElement.classList.add('matched');
+
+                if (gameState.matches === emojiPairs.length) {
+                    endGame();
+                }
+            } else {
+                // No match
+                const firstElement = document.querySelector(`[data-index="${first}"]`);
+                const secondElement = document.querySelector(`[data-index="${second}"]`);
+                firstElement.classList.remove('flipped');
+                secondElement.classList.remove('flipped');
+            }
+
+            gameState.flippedCards = [];
+            updateStats();
+        }
+
+        function startGame() {
+            gameState.gameStarted = true;
+            gameState.startTime = Date.now();
+            gameState.gameTimer = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+            document.getElementById('timeCount').textContent = elapsed;
+        }
+
+        function updateStats() {
+            document.getElementById('movesCount').textContent = gameState.moves;
+            document.getElementById('matchesCount').textContent = gameState.matches;
+        }
+
+        function endGame() {
+            clearInterval(gameState.gameTimer);
+            document.getElementById('successMessage').style.display = 'block';
+        }
+
+        function resetGame() {
+            // Reset game state
+            gameState = {
+                cards: [],
+                flippedCards: [],
+                matches: 0,
+                moves: 0,
+                gameStarted: false,
+                gameTimer: null,
+                startTime: null
+            };
+
+            // Clear timer
+            clearInterval(gameState.gameTimer);
+
+            // Reset UI
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('movesCount').textContent = '0';
+            document.getElementById('matchesCount').textContent = '0';
+            document.getElementById('timeCount').textContent = '0';
+
+            // Restart game
+            initGame();
+        }
+
+        function showNewQuestion() {
+            currentQuestionIndex = Math.floor(Math.random() * questions.length);
+            document.getElementById('questionText').textContent = questions[currentQuestionIndex];
+        }
+
+        // Element SDK implementation
+        async function onConfigChange(config) {
+            const gameTitle = config.game_title || defaultConfig.game_title;
+            const welcomeMessage = config.welcome_message || defaultConfig.welcome_message;
+            const successMessage = config.success_message || defaultConfig.success_message;
+
+            document.getElementById('gameTitle').textContent = gameTitle;
+            document.getElementById('welcomeMessage').textContent = welcomeMessage;
+            document.getElementById('successMessage').textContent = successMessage;
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["game_title", config.game_title || defaultConfig.game_title],
+                ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+                ["success_message", config.success_message || defaultConfig.success_message]
+            ]);
+        }
+
+        // Initialize Element SDK
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig,
+                onConfigChange,
+                mapToCapabilities,
+                mapToEditPanelValues
+            });
+        }
+
+        // Start the game when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9956157a058aa1d2',t:'MTc2MTYwODkwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
