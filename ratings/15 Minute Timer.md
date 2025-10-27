@@ -1,4 +1,4 @@
-# ⏲️ 15 Minute Timer — Canva AI Review
+# ⏲️ 15 Minute Timer | Canva AI Review
 
 ## 🏆 Rating
 
