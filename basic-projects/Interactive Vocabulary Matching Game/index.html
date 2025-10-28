@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocabulary Matching Game</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            color: #2d3748;
+        }
+
+        .game-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4c51bf;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            font-size: 1.1rem;
+            color: #718096;
+            margin-bottom: 20px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .column {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 20px;
+            border: 3px solid #e2e8f0;
+        }
+
+        .column-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .terms-title {
+            background: linear-gradient(90deg, #ed8936, #dd6b20);
+            color: white;
+        }
+
+        .definitions-title {
+            background: linear-gradient(90deg, #38b2ac, #319795);
+            color: white;
+        }
+
+        .item {
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .term {
+            background: linear-gradient(135deg, #fed7d7, #feb2b2);
+            border-color: #f56565;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .definition {
+            background: linear-gradient(135deg, #c6f6d5, #9ae6b4);
+            border-color: #48bb78;
+        }
+
+        .item.selected {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(66, 153, 225, 0.5);
+        }
+
+        .term.selected {
+            border-color: #3182ce;
+            background: linear-gradient(135deg, #bee3f8, #90cdf4);
+        }
+
+        .definition.selected {
+            border-color: #3182ce;
+            background: linear-gradient(135deg, #bee3f8, #90cdf4);
+        }
+
+        .item.matched {
+            background: linear-gradient(135deg, #c6f6d5, #9ae6b4) !important;
+            border-color: #38a169 !important;
+            opacity: 0.7;
+            cursor: default;
+            position: relative;
+        }
+
+        .item.matched::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            color: #38a169;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .hint-section {
+            background: linear-gradient(135deg, #fef5e7, #fed7aa);
+            border: 2px solid #f6ad55;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .hint-button {
+            background: linear-gradient(135deg, #f6ad55, #ed8936);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .hint-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(237, 137, 54, 0.3);
+        }
+
+        .hint-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hint-text {
+            font-size: 1rem;
+            color: #744210;
+            font-weight: 500;
+            min-height: 24px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .success-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .success-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            animation: celebrationBounce 0.6s ease-out;
+        }
+
+        .success-title {
+            font-size: 2.5rem;
+            color: #38a169;
+            margin-bottom: 20px;
+        }
+
+        .success-message {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin-bottom: 30px;
+        }
+
+        .play-again-button {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-again-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        @keyframes celebrationBounce {
+            0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes matchSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .match-animation {
+            animation: matchSuccess 0.5s ease-out;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f56565;
+            animation: confettiFall 3s linear infinite;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .game-title {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="game-container">
+   <div class="header">
+    <h1 class="game-title" id="gameTitle">Geometry Vocabulary Match</h1>
+    <p class="instructions" id="instructionsText">Match each geometry term with its correct definition. Click on a term, then click on its matching definition!</p>
+   </div>
+   <div class="score-board">
+    <div>
+     Score: <span id="score">0</span>
+    </div>
+    <div>
+     Matches: <span id="matches">0</span>/6
+    </div>
+    <div>
+     Attempts: <span id="attempts">0</span>
+    </div>
+   </div>
+   <div class="hint-section"><button class="hint-button" id="hintButton">💡 Get Hint</button>
+    <div class="hint-text" id="hintText">
+     Click the hint button for help with your next match!
+    </div>
+   </div>
+   <div class="game-board">
+    <div class="column">
+     <div class="column-title terms-title">
+      📐 Terms
+     </div>
+     <div id="termsColumn"></div>
+    </div>
+    <div class="column">
+     <div class="column-title definitions-title">
+      📝 Definitions
+     </div>
+     <div id="definitionsColumn"></div>
+    </div>
+   </div>
+   <div class="controls"><button class="control-button" id="resetButton">🔄 Reset Game</button> <button class="control-button" id="shuffleButton">🔀 Shuffle</button>
+   </div>
+  </div>
+  <div class="success-modal" id="successModal">
+   <div class="success-content">
+    <div class="success-title">
+     🎉 Congratulations! 🎉
+    </div>
+    <div class="success-message" id="successMessage">
+     You've mastered all the geometry vocabulary! Great job matching all 6 terms correctly!
+    </div><button class="play-again-button" id="playAgainButton">Play Again</button>
+   </div>
+  </div>
+  <script>
+        const defaultConfig = {
+            game_title: "Geometry Vocabulary Match",
+            instructions_text: "Match each geometry term with its correct definition. Click on a term, then click on its matching definition!",
+            success_message: "You've mastered all the geometry vocabulary! Great job matching all 6 terms correctly!"
+        };
+
+        const vocabularyData = [
+            {
+                id: 1,
+                term: "Triangle",
+                definition: "A polygon with three sides and three angles",
+                hint: "This shape has the least number of sides for a polygon"
+            },
+            {
+                id: 2,
+                term: "Radius",
+                definition: "The distance from the center of a circle to any point on its edge",
+                hint: "This measurement goes from the center to the circumference"
+            },
+            {
+                id: 3,
+                term: "Perimeter",
+                definition: "The total distance around the outside of a shape",
+                hint: "If you walked around the edge of a shape, this is how far you'd travel"
+            },
+            {
+                id: 4,
+                term: "Angle",
+                definition: "The space between two intersecting lines, measured in degrees",
+                hint: "This is formed when two lines meet at a point"
+            },
+            {
+                id: 5,
+                term: "Diameter",
+                definition: "A straight line passing through the center of a circle, touching two points on the edge",
+                hint: "This is twice as long as the radius"
+            },
+            {
+                id: 6,
+                term: "Parallel",
+                definition: "Lines that run in the same direction and never intersect",
+                hint: "Think of railroad tracks - they never meet"
+            }
+        ];
+
+        let gameState = {
+            selectedTerm: null,
+            selectedDefinition: null,
+            matches: 0,
+            attempts: 0,
+            score: 0,
+            matchedPairs: new Set(),
+            hintsUsed: 0
+        };
+
+        function initializeGame() {
+            renderVocabulary();
+            updateScore();
+            resetSelections();
+            gameState.matches = 0;
+            gameState.attempts = 0;
+            gameState.score = 0;
+            gameState.matchedPairs.clear();
+            gameState.hintsUsed = 0;
+            document.getElementById('hintText').textContent = "Click the hint button for help with your next match!";
+            document.getElementById('hintButton').disabled = false;
+        }
+
+        function renderVocabulary() {
+            const termsColumn = document.getElementById('termsColumn');
+            const definitionsColumn = document.getElementById('definitionsColumn');
+            
+            termsColumn.innerHTML = '';
+            definitionsColumn.innerHTML = '';
+
+            // Shuffle the definitions for more challenge
+            const shuffledDefinitions = [...vocabularyData].sort(() => Math.random() - 0.5);
+
+            vocabularyData.forEach(item => {
+                const termElement = document.createElement('div');
+                termElement.className = 'item term';
+                termElement.textContent = item.term;
+                termElement.dataset.id = item.id;
+                termElement.addEventListener('click', () => selectTerm(item.id));
+                termsColumn.appendChild(termElement);
+            });
+
+            shuffledDefinitions.forEach(item => {
+                const definitionElement = document.createElement('div');
+                definitionElement.className = 'item definition';
+                definitionElement.textContent = item.definition;
+                definitionElement.dataset.id = item.id;
+                definitionElement.addEventListener('click', () => selectDefinition(item.id));
+                definitionsColumn.appendChild(definitionElement);
+            });
+        }
+
+        function selectTerm(id) {
+            if (gameState.matchedPairs.has(id)) return;
+
+            resetSelections();
+            gameState.selectedTerm = id;
+            
+            const termElement = document.querySelector(`.term[data-id="${id}"]`);
+            termElement.classList.add('selected');
+        }
+
+        function selectDefinition(id) {
+            if (gameState.matchedPairs.has(id)) return;
+
+            const definitionElement = document.querySelector(`.definition[data-id="${id}"]`);
+            
+            if (gameState.selectedDefinition === id) {
+                // Deselect if clicking the same definition
+                gameState.selectedDefinition = null;
+                definitionElement.classList.remove('selected');
+                return;
+            }
+
+            // Remove previous definition selection
+            document.querySelectorAll('.definition.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            gameState.selectedDefinition = id;
+            definitionElement.classList.add('selected');
+
+            // Check for match if both term and definition are selected
+            if (gameState.selectedTerm !== null) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            gameState.attempts++;
+            
+            if (gameState.selectedTerm === gameState.selectedDefinition) {
+                // Correct match!
+                handleCorrectMatch();
+            } else {
+                // Incorrect match
+                handleIncorrectMatch();
+            }
+            
+            updateScore();
+        }
+
+        function handleCorrectMatch() {
+            const id = gameState.selectedTerm;
+            gameState.matches++;
+            gameState.score += Math.max(100 - (gameState.attempts * 5) - (gameState.hintsUsed * 10), 10);
+            gameState.matchedPairs.add(id);
+
+            // Add matched styling and animation
+            const termElement = document.querySelector(`.term[data-id="${id}"]`);
+            const definitionElement = document.querySelector(`.definition[data-id="${id}"]`);
+            
+            termElement.classList.add('matched', 'match-animation');
+            definitionElement.classList.add('matched', 'match-animation');
+
+            // Create confetti effect
+            createConfetti();
+
+            resetSelections();
+
+            // Check if game is complete
+            if (gameState.matches === vocabularyData.length) {
+                setTimeout(() => showSuccessModal(), 1000);
+            }
+        }
+
+        function handleIncorrectMatch() {
+            // Brief red flash effect
+            const termElement = document.querySelector(`.term[data-id="${gameState.selectedTerm}"]`);
+            const definitionElement = document.querySelector(`.definition[data-id="${gameState.selectedDefinition}"]`);
+            
+            termElement.style.background = 'linear-gradient(135deg, #fed7d7, #fc8181)';
+            definitionElement.style.background = 'linear-gradient(135deg, #fed7d7, #fc8181)';
+            
+            setTimeout(() => {
+                termElement.style.background = '';
+                definitionElement.style.background = '';
+                resetSelections();
+            }, 500);
+        }
+
+        function resetSelections() {
+            gameState.selectedTerm = null;
+            gameState.selectedDefinition = null;
+            
+            document.querySelectorAll('.item.selected').forEach(item => {
+                item.classList.remove('selected');
+            });
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('matches').textContent = gameState.matches;
+            document.getElementById('attempts').textContent = gameState.attempts;
+        }
+
+        function showHint() {
+            if (gameState.selectedTerm) {
+                const termData = vocabularyData.find(item => item.id === gameState.selectedTerm);
+                document.getElementById('hintText').textContent = `💡 ${termData.hint}`;
+                gameState.hintsUsed++;
+            } else {
+                // Show a general hint about unmatched terms
+                const unmatchedTerms = vocabularyData.filter(item => !gameState.matchedPairs.has(item.id));
+                if (unmatchedTerms.length > 0) {
+                    const randomTerm = unmatchedTerms[Math.floor(Math.random() * unmatchedTerms.length)];
+                    document.getElementById('hintText').textContent = `💡 Try matching "${randomTerm.term}": ${randomTerm.hint}`;
+                    gameState.hintsUsed++;
+                }
+            }
+        }
+
+        function shuffleDefinitions() {
+            const definitionsColumn = document.getElementById('definitionsColumn');
+            const definitions = Array.from(definitionsColumn.children);
+            
+            // Shuffle array
+            for (let i = definitions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [definitions[i], definitions[j]] = [definitions[j], definitions[i]];
+            }
+            
+            // Re-append in new order
+            definitions.forEach(def => definitionsColumn.appendChild(def));
+        }
+
+        function createConfetti() {
+            const colors = ['#f56565', '#48bb78', '#4299e1', '#ed8936', '#9f7aea'];
+            
+            for (let i = 0; i < 20; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        function showSuccessModal() {
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        function hideSuccessModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+
+        async function onConfigChange(config) {
+            const gameTitle = config.game_title || defaultConfig.game_title;
+            const instructionsText = config.instructions_text || defaultConfig.instructions_text;
+            const successMessage = config.success_message || defaultConfig.success_message;
+
+            document.getElementById('gameTitle').textContent = gameTitle;
+            document.getElementById('instructionsText').textContent = instructionsText;
+            document.getElementById('successMessage').textContent = successMessage;
+        }
+
+        // Event listeners
+        document.getElementById('hintButton').addEventListener('click', showHint);
+        document.getElementById('resetButton').addEventListener('click', initializeGame);
+        document.getElementById('shuffleButton').addEventListener('click', shuffleDefinitions);
+        document.getElementById('playAgainButton').addEventListener('click', () => {
+            hideSuccessModal();
+            initializeGame();
+        });
+
+        // Initialize Element SDK
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig,
+                onConfigChange,
+                mapToCapabilities: (config) => ({
+                    recolorables: [],
+                    borderables: [],
+                    fontEditable: undefined,
+                    fontSizeable: undefined
+                }),
+                mapToEditPanelValues: (config) => new Map([
+                    ["game_title", config.game_title || defaultConfig.game_title],
+                    ["instructions_text", config.instructions_text || defaultConfig.instructions_text],
+                    ["success_message", config.success_message || defaultConfig.success_message]
+                ])
+            });
+        }
+
+        // Start the game
+        initializeGame();
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9957ac3bc7248723',t:'MTc2MTYyNTU2My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
