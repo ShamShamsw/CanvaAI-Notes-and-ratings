@@ -7,7 +7,7 @@
 | Functionality | ⭐    | Works as an interactive memory game; core functionality is solid and engaging. |
 | Readability   | ⭐    | Code is clear, well-organized, and easy to understand. |
 | Efficiency    | ⭐    | Launches quickly and includes extra content/features for enhanced experience. |
-| Accuracy      | ⭐    | There are some bugs related to resetting the timer in the matching game. |
+| Accuracy      | ☆    | There are some bugs related to resetting the timer in the matching game. However is fixed by the start of the next game. |
 | Creativity    | ⭐    | Highly aesthetic design, dynamic card changes, try counter, and timer add creativity and polish. |
 | Final Rating  | ⭐⭐⭐⭐☆    | *(See basic-projects/Interactive-Memory-Matching-Game folder for full code.)* |
 
