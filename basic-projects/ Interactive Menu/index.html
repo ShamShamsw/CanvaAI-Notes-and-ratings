@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Menu Builder</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .category-appetizers { border-left: 4px solid #f59e0b; }
+        .category-pastas { border-left: 4px solid #ef4444; }
+        .category-desserts { border-left: 4px solid #8b5cf6; }
+        
+        .bg-appetizers { background-color: #fef3c7; }
+        .bg-pastas { background-color: #fee2e2; }
+        .bg-desserts { background-color: #ede9fe; }
+        
+        .text-appetizers { color: #d97706; }
+        .text-pastas { color: #dc2626; }
+        .text-desserts { color: #7c3aed; }
+        
+        .order-item {
+            transition: all 0.2s ease;
+        }
+        
+        .order-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .customize-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .customize-panel.open {
+            max-height: 500px;
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="min-h-full bg-gray-50">
+  <div class="max-w-7xl mx-auto p-6"><!-- Header -->
+   <header class="text-center mb-8">
+    <h1 id="restaurant-name" class="text-4xl font-bold text-gray-900 mb-2">Bella Cucina</h1>
+    <p id="restaurant-tagline" class="text-lg text-gray-600">Authentic Italian Cuisine Made Fresh Daily</p>
+   </header>
+   <div class="grid lg:grid-cols-3 gap-8"><!-- Menu Categories -->
+    <div class="lg:col-span-2">
+     <h2 class="text-2xl font-bold text-gray-900 mb-6">Build Your Order</h2><!-- Appetizers -->
+     <section class="mb-8">
+      <div class="flex items-center mb-4">
+       <div class="w-4 h-4 bg-yellow-500 rounded-full mr-3"></div>
+       <h3 class="text-xl font-semibold text-gray-900">Appetizers</h3><span class="ml-auto text-sm text-gray-500">$8-12</span>
+      </div>
+      <div class="space-y-3">
+       <div class="menu-item bg-white rounded-lg p-4 category-appetizers order-item cursor-pointer" data-category="appetizers" data-name="Bruschetta Trio" data-price="10">
+        <div class="flex justify-between items-start">
+         <div>
+          <h4 class="font-medium text-gray-900">Bruschetta Trio</h4>
+          <p class="text-sm text-gray-600 mt-1">Classic tomato, mushroom &amp; olive tapenade on toasted bread</p>
+         </div><span class="text-lg font-semibold text-gray-900">$10</span>
+        </div>
+       </div>
+       <div class="menu-item bg-white rounded-lg p-4 category-appetizers order-item cursor-pointer" data-category="appetizers" data-name="Antipasto Platter" data-price="12">
+        <div class="flex justify-between items-start">
+         <div>
+          <h4 class="font-medium text-gray-900">Antipasto Platter</h4>
+          <p class="text-sm text-gray-600 mt-1">Cured meats, artisanal cheeses, olives &amp; roasted peppers</p>
+         </div><span class="text-lg font-semibold text-gray-900">$12</span>
+        </div>
+       </div>
+       <div class="menu-item bg-white rounded-lg p-4 category-appetizers order-item cursor-pointer" data-category="appetizers" data-name="Arancini" data-price="8">
+        <div class="flex justify-between items-start">
+         <div>
+          <h4 class="font-medium text-gray-900">Arancini</h4>
+          <p class="text-sm text-gray-600 mt-1">Crispy risotto balls stuffed with mozzarella &amp; herbs</p>
+         </div><span class="text-lg font-semibold text-gray-900">$8</span>
+        </div>
+       </div>
+      </div>
+     </section><!-- Pastas -->
+     <section class="mb-8">
+      <div class="flex items-center mb-4">
+       <div class="w-4 h-4 bg-red-500 rounded-full mr-3"></div>
+       <h3 class="text-xl font-semibold text-gray-900">Pasta</h3><span class="ml-auto text-sm text-gray-500">$14-18 + protein add-ons</span>
+      </div>
+      <div class="space-y-3">
+       <div class="menu-item bg-white rounded-lg category-pastas order-item cursor-pointer" data-category="pastas" data-name="Spaghetti Carbonara" data-price="16">
+        <div class="p-4">
+         <div class="flex justify-between items-start">
+          <div>
+           <h4 class="font-medium text-gray-900">Spaghetti Carbonara</h4>
+           <p class="text-sm text-gray-600 mt-1">Creamy egg sauce with pancetta &amp; pecorino romano</p>
+          </div><span class="text-lg font-semibold text-gray-900">$16</span>
+         </div>
+        </div>
+        <div class="customize-panel bg-gray-50 px-4 pb-4">
+         <div class="space-y-3">
+          <div><label class="block text-sm font-medium text-gray-700 mb-2">Add Protein (+$4-8)</label>
+           <div class="flex flex-wrap gap-2"><button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Grilled Chicken" data-price="4">Grilled Chicken +$4</button> <button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Italian Sausage" data-price="5">Italian Sausage +$5</button> <button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Shrimp" data-price="8">Shrimp +$8</button>
+           </div>
+          </div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-2">Spice Level</label>
+           <div class="flex gap-2"><button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100 bg-gray-100" data-spice="Mild">Mild</button> <button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-spice="Medium">Medium</button> <button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-spice="Spicy">Spicy</button>
+           </div>
+          </div><button class="add-to-order-btn w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors">Add to Order</button>
+         </div>
+        </div>
+       </div>
+       <div class="menu-item bg-white rounded-lg category-pastas order-item cursor-pointer" data-category="pastas" data-name="Penne Arrabbiata" data-price="14">
+        <div class="p-4">
+         <div class="flex justify-between items-start">
+          <div>
+           <h4 class="font-medium text-gray-900">Penne Arrabbiata</h4>
+           <p class="text-sm text-gray-600 mt-1">Spicy tomato sauce with garlic, red peppers &amp; herbs</p>
+          </div><span class="text-lg font-semibold text-gray-900">$14</span>
+         </div>
+        </div>
+        <div class="customize-panel bg-gray-50 px-4 pb-4">
+         <div class="space-y-3">
+          <div><label class="block text-sm font-medium text-gray-700 mb-2">Add Protein (+$4-8)</label>
+           <div class="flex flex-wrap gap-2"><button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Grilled Chicken" data-price="4">Grilled Chicken +$4</button> <button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Italian Sausage" data-price="5">Italian Sausage +$5</button> <button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Shrimp" data-price="8">Shrimp +$8</button>
+           </div>
+          </div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-2">Spice Level</label>
+           <div class="flex gap-2"><button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-spice="Mild">Mild</button> <button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100 bg-gray-100" data-spice="Medium">Medium</button> <button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-spice="Spicy">Spicy</button>
+           </div>
+          </div><button class="add-to-order-btn w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors">Add to Order</button>
+         </div>
+        </div>
+       </div>
+       <div class="menu-item bg-white rounded-lg category-pastas order-item cursor-pointer" data-category="pastas" data-name="Fettuccine Alfredo" data-price="15">
+        <div class="p-4">
+         <div class="flex justify-between items-start">
+          <div>
+           <h4 class="font-medium text-gray-900">Fettuccine Alfredo</h4>
+           <p class="text-sm text-gray-600 mt-1">Rich parmesan cream sauce with fresh herbs</p>
+          </div><span class="text-lg font-semibold text-gray-900">$15</span>
+         </div>
+        </div>
+        <div class="customize-panel bg-gray-50 px-4 pb-4">
+         <div class="space-y-3">
+          <div><label class="block text-sm font-medium text-gray-700 mb-2">Add Protein (+$4-8)</label>
+           <div class="flex flex-wrap gap-2"><button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Grilled Chicken" data-price="4">Grilled Chicken +$4</button> <button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Italian Sausage" data-price="5">Italian Sausage +$5</button> <button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Shrimp" data-price="8">Shrimp +$8</button>
+           </div>
+          </div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-2">Spice Level</label>
+           <div class="flex gap-2"><button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100 bg-gray-100" data-spice="Mild">Mild</button> <button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-spice="Medium">Medium</button> <button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-spice="Spicy">Spicy</button>
+           </div>
+          </div><button class="add-to-order-btn w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors">Add to Order</button>
+         </div>
+        </div>
+       </div>
+       <div class="menu-item bg-white rounded-lg category-pastas order-item cursor-pointer" data-category="pastas" data-name="Linguine alle Vongole" data-price="18">
+        <div class="p-4">
+         <div class="flex justify-between items-start">
+          <div>
+           <h4 class="font-medium text-gray-900">Linguine alle Vongole</h4>
+           <p class="text-sm text-gray-600 mt-1">Fresh clams in white wine sauce with garlic &amp; parsley</p>
+          </div><span class="text-lg font-semibold text-gray-900">$18</span>
+         </div>
+        </div>
+        <div class="customize-panel bg-gray-50 px-4 pb-4">
+         <div class="space-y-3">
+          <div><label class="block text-sm font-medium text-gray-700 mb-2">Add Protein (+$4-8)</label>
+           <div class="flex flex-wrap gap-2"><button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Grilled Chicken" data-price="4">Grilled Chicken +$4</button> <button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Italian Sausage" data-price="5">Italian Sausage +$5</button> <button class="protein-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-protein="Shrimp" data-price="8">Shrimp +$8</button>
+           </div>
+          </div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-2">Spice Level</label>
+           <div class="flex gap-2"><button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100 bg-gray-100" data-spice="Mild">Mild</button> <button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-spice="Medium">Medium</button> <button class="spice-btn px-3 py-1 text-xs border border-gray-300 rounded-full hover:bg-gray-100" data-spice="Spicy">Spicy</button>
+           </div>
+          </div><button class="add-to-order-btn w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors">Add to Order</button>
+         </div>
+        </div>
+       </div>
+      </div>
+     </section><!-- Desserts -->
+     <section class="mb-8">
+      <div class="flex items-center mb-4">
+       <div class="w-4 h-4 bg-purple-500 rounded-full mr-3"></div>
+       <h3 class="text-xl font-semibold text-gray-900">Desserts</h3><span class="ml-auto text-sm text-gray-500">$6-9</span>
+      </div>
+      <div class="space-y-3">
+       <div class="menu-item bg-white rounded-lg p-4 category-desserts order-item cursor-pointer" data-category="desserts" data-name="Tiramisu" data-price="8">
+        <div class="flex justify-between items-start">
+         <div>
+          <h4 class="font-medium text-gray-900">Tiramisu</h4>
+          <p class="text-sm text-gray-600 mt-1">Classic coffee-soaked ladyfingers with mascarpone</p>
+         </div><span class="text-lg font-semibold text-gray-900">$8</span>
+        </div>
+       </div>
+       <div class="menu-item bg-white rounded-lg p-4 category-desserts order-item cursor-pointer" data-category="desserts" data-name="Panna Cotta" data-price="7">
+        <div class="flex justify-between items-start">
+         <div>
+          <h4 class="font-medium text-gray-900">Panna Cotta</h4>
+          <p class="text-sm text-gray-600 mt-1">Silky vanilla custard with seasonal berry compote</p>
+         </div><span class="text-lg font-semibold text-gray-900">$7</span>
+        </div>
+       </div>
+       <div class="menu-item bg-white rounded-lg p-4 category-desserts order-item cursor-pointer" data-category="desserts" data-name="Cannoli Siciliani" data-price="6">
+        <div class="flex justify-between items-start">
+         <div>
+          <h4 class="font-medium text-gray-900">Cannoli Siciliani</h4>
+          <p class="text-sm text-gray-600 mt-1">Crispy shells filled with sweet ricotta &amp; chocolate chips</p>
+         </div><span class="text-lg font-semibold text-gray-900">$6</span>
+        </div>
+       </div>
+       <div class="menu-item bg-white rounded-lg p-4 category-desserts order-item cursor-pointer" data-category="desserts" data-name="Gelato Trio" data-price="9">
+        <div class="flex justify-between items-start">
+         <div>
+          <h4 class="font-medium text-gray-900">Gelato Trio</h4>
+          <p class="text-sm text-gray-600 mt-1">Three scoops: pistachio, stracciatella &amp; limoncello</p>
+         </div><span class="text-lg font-semibold text-gray-900">$9</span>
+        </div>
+       </div>
+      </div>
+     </section>
+    </div><!-- Order Summary -->
+    <div class="lg:col-span-1">
+     <div class="bg-white rounded-lg p-6 sticky top-6">
+      <h3 id="order-summary-title" class="text-xl font-semibold text-gray-900 mb-4">Your Order</h3>
+      <div id="order-items" class="space-y-3 mb-4">
+       <div class="text-center text-gray-500 py-8">
+        <p>Your order items will appear here</p>
+       </div>
+      </div>
+      <div class="border-t pt-4">
+       <div class="flex justify-between items-center text-lg font-semibold"><span>Total:</span> <span id="order-total">$0.00</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        let currentOrderData = [];
+        let currentRecordCount = 0;
+        
+        const defaultConfig = {
+            restaurant_name: "Bella Cucina",
+            restaurant_tagline: "Authentic Italian Cuisine Made Fresh Daily",
+            order_summary_title: "Your Order"
+        };
+
+        // Data SDK Handler
+        const dataHandler = {
+            onDataChanged(data) {
+                currentOrderData = data;
+                currentRecordCount = data.length;
+                updateOrderSummary();
+            }
+        };
+
+        // Element SDK Configuration
+        const elementConfig = {
+            defaultConfig,
+            onConfigChange: async (config) => {
+                document.getElementById('restaurant-name').textContent = config.restaurant_name || defaultConfig.restaurant_name;
+                document.getElementById('restaurant-tagline').textContent = config.restaurant_tagline || defaultConfig.restaurant_tagline;
+                document.getElementById('order-summary-title').textContent = config.order_summary_title || defaultConfig.order_summary_title;
+            },
+            mapToCapabilities: (config) => ({
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            }),
+            mapToEditPanelValues: (config) => new Map([
+                ["restaurant_name", config.restaurant_name || defaultConfig.restaurant_name],
+                ["restaurant_tagline", config.restaurant_tagline || defaultConfig.restaurant_tagline],
+                ["order_summary_title", config.order_summary_title || defaultConfig.order_summary_title]
+            ])
+        };
+
+        // Initialize SDKs
+        async function initializeApp() {
+            if (window.dataSdk) {
+                const initResult = await window.dataSdk.init(dataHandler);
+                if (!initResult.isOk) {
+                    console.error("Failed to initialize data SDK");
+                }
+            }
+            
+            if (window.elementSdk) {
+                window.elementSdk.init(elementConfig);
+            }
+        }
+
+        // Menu item interactions
+        document.addEventListener('click', function(e) {
+            const menuItem = e.target.closest('.menu-item');
+            if (!menuItem) return;
+
+            const customizePanel = menuItem.querySelector('.customize-panel');
+            if (customizePanel) {
+                // Toggle customize panel for pasta items
+                customizePanel.classList.toggle('open');
+                
+                // Handle protein selection
+                if (e.target.classList.contains('protein-btn')) {
+                    e.stopPropagation();
+                    menuItem.querySelectorAll('.protein-btn').forEach(btn => btn.classList.remove('bg-blue-100', 'border-blue-500'));
+                    e.target.classList.add('bg-blue-100', 'border-blue-500');
+                }
+                
+                // Handle spice level selection
+                if (e.target.classList.contains('spice-btn')) {
+                    e.stopPropagation();
+                    menuItem.querySelectorAll('.spice-btn').forEach(btn => btn.classList.remove('bg-gray-100'));
+                    e.target.classList.add('bg-gray-100');
+                }
+                
+                // Handle add to order
+                if (e.target.classList.contains('add-to-order-btn')) {
+                    e.stopPropagation();
+                    addCustomizedItemToOrder(menuItem);
+                }
+            } else {
+                // Simple items (appetizers, desserts) - add directly
+                addSimpleItemToOrder(menuItem);
+            }
+        });
+
+        async function addSimpleItemToOrder(menuItem) {
+            if (currentRecordCount >= 999) {
+                showMessage("Maximum limit of 999 items reached. Please remove some items first.", "error");
+                return;
+            }
+
+            const button = menuItem;
+            button.classList.add('loading');
+
+            const itemData = {
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                category: menuItem.dataset.category,
+                item_name: menuItem.dataset.name,
+                base_price: parseFloat(menuItem.dataset.price),
+                proteins: "",
+                customizations: "",
+                total_price: parseFloat(menuItem.dataset.price),
+                timestamp: new Date().toISOString()
+            };
+
+            if (window.dataSdk) {
+                const result = await window.dataSdk.create(itemData);
+                if (result.isOk) {
+                    showMessage(`${itemData.item_name} added to your order!`, "success");
+                } else {
+                    showMessage("Failed to add item to order. Please try again.", "error");
+                }
+            }
+
+            button.classList.remove('loading');
+        }
+
+        async function addCustomizedItemToOrder(menuItem) {
+            if (currentRecordCount >= 999) {
+                showMessage("Maximum limit of 999 items reached. Please remove some items first.", "error");
+                return;
+            }
+
+            const button = menuItem.querySelector('.add-to-order-btn');
+            button.classList.add('loading');
+
+            const selectedProtein = menuItem.querySelector('.protein-btn.bg-blue-100');
+            const selectedSpice = menuItem.querySelector('.spice-btn.bg-gray-100');
+            
+            const basePrice = parseFloat(menuItem.dataset.price);
+            const proteinPrice = selectedProtein ? parseFloat(selectedProtein.dataset.price) : 0;
+            const totalPrice = basePrice + proteinPrice;
+            
+            const proteins = selectedProtein ? selectedProtein.dataset.protein : "";
+            const spiceLevel = selectedSpice ? selectedSpice.dataset.spice : "Mild";
+            
+            const customizations = `Spice: ${spiceLevel}`;
+
+            const itemData = {
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                category: menuItem.dataset.category,
+                item_name: menuItem.dataset.name,
+                base_price: basePrice,
+                proteins: proteins,
+                customizations: customizations,
+                total_price: totalPrice,
+                timestamp: new Date().toISOString()
+            };
+
+            if (window.dataSdk) {
+                const result = await window.dataSdk.create(itemData);
+                if (result.isOk) {
+                    showMessage(`${itemData.item_name} added to your order!`, "success");
+                    // Close customize panel
+                    menuItem.querySelector('.customize-panel').classList.remove('open');
+                    // Reset selections
+                    menuItem.querySelectorAll('.protein-btn').forEach(btn => btn.classList.remove('bg-blue-100', 'border-blue-500'));
+                    menuItem.querySelectorAll('.spice-btn').forEach(btn => btn.classList.remove('bg-gray-100'));
+                    menuItem.querySelector('.spice-btn[data-spice="Mild"]').classList.add('bg-gray-100');
+                } else {
+                    showMessage("Failed to add item to order. Please try again.", "error");
+                }
+            }
+
+            button.classList.remove('loading');
+        }
+
+        async function removeFromOrder(itemId) {
+            const itemToRemove = currentOrderData.find(item => item.__backendId === itemId);
+            if (!itemToRemove) return;
+
+            if (window.dataSdk) {
+                const result = await window.dataSdk.delete(itemToRemove);
+                if (result.isOk) {
+                    showMessage("Item removed from order", "success");
+                } else {
+                    showMessage("Failed to remove item. Please try again.", "error");
+                }
+            }
+        }
+
+        function updateOrderSummary() {
+            const orderItemsContainer = document.getElementById('order-items');
+            const orderTotal = document.getElementById('order-total');
+            
+            if (currentOrderData.length === 0) {
+                orderItemsContainer.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <p>Your order items will appear here</p>
+                    </div>
+                `;
+                orderTotal.textContent = '$0.00';
+                return;
+            }
+
+            const total = currentOrderData.reduce((sum, item) => sum + item.total_price, 0);
+            
+            orderItemsContainer.innerHTML = currentOrderData.map(item => `
+                <div class="border-b pb-3 last:border-b-0">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-900 text-sm">${item.item_name}</h4>
+                            ${item.proteins ? `<p class="text-xs text-gray-600">+ ${item.proteins}</p>` : ''}
+                            ${item.customizations ? `<p class="text-xs text-gray-600">${item.customizations}</p>` : ''}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium">$${item.total_price.toFixed(2)}</span>
+                            <button onclick="removeFromOrder('${item.__backendId}')" 
+                                    class="text-red-500 hover:text-red-700 text-xs">✕</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            orderTotal.textContent = `$${total.toFixed(2)}`;
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        // Initialize the application
+        initializeApp();
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9957510e86ab8723',t:'MTc2MTYyMTgyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
