@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clarity Studio Photography - Pricing Calculator</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .service-card {
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .range-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            outline: none;
+        }
+        
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .number-input {
+            -moz-appearance: textfield;
+        }
+        
+        .number-input::-webkit-outer-spin-button,
+        .number-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="min-h-full gradient-bg">
+  <div class="min-h-full py-8 px-4">
+   <div class="max-w-6xl mx-auto"><!-- Header -->
+    <div class="text-center mb-12">
+     <h1 id="business-name" class="text-4xl md:text-6xl font-bold text-white mb-4">Clarity Studio Photography</h1>
+     <p id="tagline" class="text-xl text-white/80 font-light">Professional photography services tailored to your needs</p>
+    </div><!-- Services Grid -->
+    <div class="grid md:grid-cols-3 gap-8 mb-12"><!-- Photography Sessions -->
+     <div class="service-card glass-effect rounded-2xl p-8 text-white">
+      <div class="text-center mb-6">
+       <div class="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+       </div>
+       <h3 id="session-label" class="text-2xl font-bold mb-2">Photography Sessions</h3>
+       <p class="text-white/70">Professional photo sessions</p>
+      </div>
+      <div class="space-y-4">
+       <div><label class="block text-sm font-medium mb-2">Hours</label> <input type="number" id="session-hours" class="number-input w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30" value="2" min="1" max="8">
+       </div>
+       <div><label class="block text-sm font-medium mb-2">Rate per Hour: $<span id="session-rate-display">200</span></label> <input type="range" id="session-rate" class="range-slider w-full" min="150" max="250" value="200">
+        <div class="flex justify-between text-xs text-white/60 mt-1"><span>$150</span> <span>$250</span>
+        </div>
+       </div>
+       <div class="pt-4 border-t border-white/20">
+        <div class="flex justify-between items-center"><span class="font-medium">Subtotal:</span> <span id="session-total" class="text-2xl font-bold">$400</span>
+        </div>
+       </div>
+      </div>
+     </div><!-- Photo Editing -->
+     <div class="service-card glass-effect rounded-2xl p-8 text-white">
+      <div class="text-center mb-6">
+       <div class="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+        </svg>
+       </div>
+       <h3 id="editing-label" class="text-2xl font-bold mb-2">Photo Editing</h3>
+       <p class="text-white/70">Professional photo retouching</p>
+      </div>
+      <div class="space-y-4">
+       <div><label class="block text-sm font-medium mb-2">Number of Images</label> <input type="number" id="editing-images" class="number-input w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30" value="10" min="1" max="100">
+       </div>
+       <div><label class="block text-sm font-medium mb-2">Price per Image: $<span id="editing-rate-display">50</span></label> <input type="range" id="editing-rate" class="range-slider w-full" min="25" max="75" value="50">
+        <div class="flex justify-between text-xs text-white/60 mt-1"><span>$25</span> <span>$75</span>
+        </div>
+       </div>
+       <div class="pt-4 border-t border-white/20">
+        <div class="flex justify-between items-center"><span class="font-medium">Subtotal:</span> <span id="editing-total" class="text-2xl font-bold">$500</span>
+        </div>
+       </div>
+      </div>
+     </div><!-- Photo Albums -->
+     <div class="service-card glass-effect rounded-2xl p-8 text-white">
+      <div class="text-center mb-6">
+       <div class="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+        </svg>
+       </div>
+       <h3 id="album-label" class="text-2xl font-bold mb-2">Photo Albums</h3>
+       <p class="text-white/70">Premium photo albums</p>
+      </div>
+      <div class="space-y-4">
+       <div><label class="block text-sm font-medium mb-2">Number of Albums</label> <input type="number" id="album-quantity" class="number-input w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30" value="1" min="1" max="10">
+       </div>
+       <div><label class="block text-sm font-medium mb-2">Price per Album: $<span id="album-rate-display">200</span></label> <input type="range" id="album-rate" class="range-slider w-full" min="100" max="300" value="200">
+        <div class="flex justify-between text-xs text-white/60 mt-1"><span>$100</span> <span>$300</span>
+        </div>
+       </div>
+       <div class="pt-4 border-t border-white/20">
+        <div class="flex justify-between items-center"><span class="font-medium">Subtotal:</span> <span id="album-total" class="text-2xl font-bold">$200</span>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Total Section -->
+    <div class="glass-effect rounded-2xl p-8 text-center text-white pulse-animation">
+     <h2 class="text-3xl font-bold mb-4">Total Project Cost</h2>
+     <div id="grand-total" class="text-6xl font-bold mb-6 bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">
+      $1,100
+     </div>
+     <p class="text-white/70 text-lg">Professional photography package estimate</p>
+     <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center"><button id="reset-btn" class="px-8 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-semibold transition-all duration-300 border border-white/30"> Reset Calculator </button> <button id="quote-btn" class="px-8 py-3 bg-white text-purple-600 hover:bg-white/90 rounded-lg font-semibold transition-all duration-300 shadow-lg"> Get Detailed Quote </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        // Default configuration
+        const defaultConfig = {
+            business_name: "Clarity Studio Photography",
+            tagline: "Professional photography services tailored to your needs",
+            session_label: "Photography Sessions",
+            editing_label: "Photo Editing",
+            album_label: "Photo Albums"
+        };
+
+        // Calculator functionality
+        function updateCalculations() {
+            // Session calculations
+            const sessionHours = parseInt(document.getElementById('session-hours').value) || 0;
+            const sessionRate = parseInt(document.getElementById('session-rate').value) || 0;
+            const sessionTotal = sessionHours * sessionRate;
+            document.getElementById('session-total').textContent = `$${sessionTotal}`;
+
+            // Editing calculations
+            const editingImages = parseInt(document.getElementById('editing-images').value) || 0;
+            const editingRate = parseInt(document.getElementById('editing-rate').value) || 0;
+            const editingTotal = editingImages * editingRate;
+            document.getElementById('editing-total').textContent = `$${editingTotal}`;
+
+            // Album calculations
+            const albumQuantity = parseInt(document.getElementById('album-quantity').value) || 0;
+            const albumRate = parseInt(document.getElementById('album-rate').value) || 0;
+            const albumTotal = albumQuantity * albumRate;
+            document.getElementById('album-total').textContent = `$${albumTotal}`;
+
+            // Grand total
+            const grandTotal = sessionTotal + editingTotal + albumTotal;
+            document.getElementById('grand-total').textContent = `$${grandTotal.toLocaleString()}`;
+        }
+
+        // Update rate displays
+        function updateRateDisplays() {
+            document.getElementById('session-rate-display').textContent = document.getElementById('session-rate').value;
+            document.getElementById('editing-rate-display').textContent = document.getElementById('editing-rate').value;
+            document.getElementById('album-rate-display').textContent = document.getElementById('album-rate').value;
+        }
+
+        // Reset calculator
+        function resetCalculator() {
+            document.getElementById('session-hours').value = 2;
+            document.getElementById('session-rate').value = 200;
+            document.getElementById('editing-images').value = 10;
+            document.getElementById('editing-rate').value = 50;
+            document.getElementById('album-quantity').value = 1;
+            document.getElementById('album-rate').value = 200;
+            
+            updateRateDisplays();
+            updateCalculations();
+        }
+
+        // Show quote summary
+        function showQuote() {
+            const sessionHours = document.getElementById('session-hours').value;
+            const sessionRate = document.getElementById('session-rate').value;
+            const editingImages = document.getElementById('editing-images').value;
+            const editingRate = document.getElementById('editing-rate').value;
+            const albumQuantity = document.getElementById('album-quantity').value;
+            const albumRate = document.getElementById('album-rate').value;
+            
+            const sessionTotal = sessionHours * sessionRate;
+            const editingTotal = editingImages * editingRate;
+            const albumTotal = albumQuantity * albumRate;
+            const grandTotal = sessionTotal + editingTotal + albumTotal;
+
+            const businessName = document.getElementById('business-name').textContent;
+            
+            const quoteDetails = `
+📸 ${businessName} - Quote Summary
+
+${document.getElementById('session-label').textContent}: ${sessionHours} hours × $${sessionRate} = $${sessionTotal}
+${document.getElementById('editing-label').textContent}: ${editingImages} images × $${editingRate} = $${editingTotal}
+${document.getElementById('album-label').textContent}: ${albumQuantity} albums × $${albumRate} = $${albumTotal}
+
+💰 Total Project Cost: $${grandTotal.toLocaleString()}
+
+This quote is valid for 30 days. Contact us to book your session!
+            `.trim();
+
+            // Create a temporary textarea to copy the quote
+            const textarea = document.createElement('textarea');
+            textarea.value = quoteDetails;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            // Show success message
+            const button = document.getElementById('quote-btn');
+            const originalText = button.textContent;
+            button.textContent = 'Quote Copied!';
+            button.style.background = '#10B981';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '';
+            }, 2000);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Input change listeners
+            ['session-hours', 'session-rate', 'editing-images', 'editing-rate', 'album-quantity', 'album-rate'].forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    updateRateDisplays();
+                    updateCalculations();
+                });
+            });
+
+            // Button listeners
+            document.getElementById('reset-btn').addEventListener('click', resetCalculator);
+            document.getElementById('quote-btn').addEventListener('click', showQuote);
+
+            // Initial calculations
+            updateRateDisplays();
+            updateCalculations();
+
+            // Initialize Element SDK
+            if (window.elementSdk) {
+                window.elementSdk.init({
+                    defaultConfig: defaultConfig,
+                    onConfigChange: async (config) => {
+                        document.getElementById('business-name').textContent = config.business_name || defaultConfig.business_name;
+                        document.getElementById('tagline').textContent = config.tagline || defaultConfig.tagline;
+                        document.getElementById('session-label').textContent = config.session_label || defaultConfig.session_label;
+                        document.getElementById('editing-label').textContent = config.editing_label || defaultConfig.editing_label;
+                        document.getElementById('album-label').textContent = config.album_label || defaultConfig.album_label;
+                    },
+                    mapToCapabilities: (config) => ({
+                        recolorables: [],
+                        borderables: [],
+                        fontEditable: undefined,
+                        fontSizeable: undefined
+                    }),
+                    mapToEditPanelValues: (config) => new Map([
+                        ["business_name", config.business_name || defaultConfig.business_name],
+                        ["tagline", config.tagline || defaultConfig.tagline],
+                        ["session_label", config.session_label || defaultConfig.session_label],
+                        ["editing_label", config.editing_label || defaultConfig.editing_label],
+                        ["album_label", config.album_label || defaultConfig.album_label]
+                    ])
+                });
+            }
+        });
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9956338de234a1d2',t:'MTc2MTYxMDEzNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
