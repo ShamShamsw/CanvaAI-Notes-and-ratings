@@ -24,7 +24,7 @@ The Canva AI-generated Interactive Memory Matching Game fulfills its purpose as 
 ---
 
 **Prompt Given to Canva AI:**  
-> Create an interactive memory matching game with visually appealing cards, a timer, and a counter for number of tries. Add a reset button and ensure the game is responsive and easy to play. Use a single HTML file.
+> Create an interactive memory matching game designed as a fun meeting ice breaker. Start with an example “Team Connect” game featuring 12 emoji cards (6 pairs), colorful workspace theme, and 10 conversation-starter questions ranging from “What emoji best describes your morning?” to “What’s a work skill you’re proud of developing?”As a follow up ask me about: team/group size, preferred emoji categories, question themes (professional growth, personal interests, team dynamics), game customization preferences (difficulty level, timer options)
 
 **Code Provided by Canva AI:**  
 *(See basic-projects/Interactive-Memory-Matching-Game folder for full code.)*
