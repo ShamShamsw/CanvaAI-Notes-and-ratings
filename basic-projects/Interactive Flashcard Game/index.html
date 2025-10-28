@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spanish Vocabulary Flashcards</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 20px;
+        }
+
+        .progress-section {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .progress-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #4a5568;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease;
+            cursor: pointer;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 3px solid #e9ecef;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .card-content {
+            text-align: center;
+        }
+
+        .card-text {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .card-hint {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #a0aec0, #718096);
+            color: white;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-counter {
+            background: rgba(255,255,255,0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .loading {
+            display: none;
+            color: white;
+            font-size: 1.1rem;
+            margin: 20px 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .flashcard {
+                height: 250px;
+            }
+            
+            .card-text {
+                font-size: 1.8rem;
+            }
+            
+            .controls {
+                flex-wrap: wrap;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <div class="header">
+    <h1 class="title" id="gameTitle">Spanish Greetings</h1>
+    <p class="subtitle" id="languageLabel">Learn Common Spanish Greetings</p>
+   </div>
+   <div class="progress-section">
+    <h3 class="progress-title" id="progressText">Your Progress</h3>
+    <div class="stats-grid">
+     <div class="stat-item">
+      <div class="stat-number" id="correctCount">
+       0
+      </div>
+      <div class="stat-label">
+       Correct
+      </div>
+     </div>
+     <div class="stat-item">
+      <div class="stat-number" id="incorrectCount">
+       0
+      </div>
+      <div class="stat-label">
+       Incorrect
+      </div>
+     </div>
+     <div class="stat-item">
+      <div class="stat-number" id="accuracyRate">
+       0%
+      </div>
+      <div class="stat-label">
+       Accuracy
+      </div>
+     </div>
+    </div>
+    <div class="progress-bar">
+     <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+   </div>
+   <div class="navigation"><button class="btn btn-secondary" id="prevBtn" onclick="previousCard()">← Previous</button>
+    <div class="card-counter"><span id="currentCard">1</span> of <span id="totalCards">5</span>
+    </div><button class="btn btn-secondary" id="nextBtn" onclick="nextCard()">Next →</button>
+   </div>
+   <div class="flashcard-container">
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+     <div class="card-face card-front">
+      <div class="card-content">
+       <div class="card-text" id="frontText">
+        Hola
+       </div>
+       <div class="card-hint">
+        Click to see translation
+       </div>
+      </div>
+     </div>
+     <div class="card-face card-back">
+      <div class="card-content">
+       <div class="card-text" id="backText">
+        Hello
+       </div>
+       <div class="card-hint">
+        Spanish greeting
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <div class="controls"><button class="btn btn-danger" id="incorrectBtn" onclick="markIncorrect()" disabled>✗ Incorrect</button> <button class="btn btn-primary" id="flipBtn" onclick="flipCard()">Flip Card</button> <button class="btn btn-success" id="correctBtn" onclick="markCorrect()" disabled>✓ Correct</button>
+   </div>
+   <div class="loading" id="loading">
+    Saving progress...
+   </div>
+  </div>
+  <script>
+        // Default configuration
+        const defaultConfig = {
+            game_title: "Spanish Greetings",
+            language_label: "Learn Common Spanish Greetings",
+            progress_text: "Your Progress"
+        };
+
+        // Flashcard data
+        const flashcards = [
+            { id: "hola", front: "Hola", back: "Hello", hint: "Spanish greeting" },
+            { id: "buenos_dias", front: "Buenos días", back: "Good morning", hint: "Morning greeting" },
+            { id: "buenas_tardes", front: "Buenas tardes", back: "Good afternoon", hint: "Afternoon greeting" },
+            { id: "buenas_noches", front: "Buenas noches", back: "Good evening/night", hint: "Evening greeting" },
+            { id: "adios", front: "Adiós", back: "Goodbye", hint: "Farewell greeting" }
+        ];
+
+        // Game state
+        let currentCardIndex = 0;
+        let isFlipped = false;
+        let userProgress = new Map();
+        let totalCorrect = 0;
+        let totalIncorrect = 0;
+
+        // Data handler for SDK
+        const dataHandler = {
+            onDataChanged(data) {
+                // Update progress from stored data
+                userProgress.clear();
+                totalCorrect = 0;
+                totalIncorrect = 0;
+                
+                data.forEach(record => {
+                    userProgress.set(record.card_id, {
+                        correct: record.correct_count || 0,
+                        incorrect: record.incorrect_count || 0,
+                        lastStudied: record.last_studied
+                    });
+                    totalCorrect += record.correct_count || 0;
+                    totalIncorrect += record.incorrect_count || 0;
+                });
+                
+                updateProgressDisplay();
+            }
+        };
+
+        // Initialize the application
+        async function initApp() {
+            // Initialize Element SDK
+            if (window.elementSdk) {
+                await window.elementSdk.init({
+                    defaultConfig,
+                    onConfigChange: async (config) => {
+                        document.getElementById('gameTitle').textContent = config.game_title || defaultConfig.game_title;
+                        document.getElementById('languageLabel').textContent = config.language_label || defaultConfig.language_label;
+                        document.getElementById('progressText').textContent = config.progress_text || defaultConfig.progress_text;
+                    },
+                    mapToCapabilities: (config) => ({
+                        recolorables: [],
+                        borderables: [],
+                        fontEditable: undefined,
+                        fontSizeable: undefined
+                    }),
+                    mapToEditPanelValues: (config) => new Map([
+                        ["game_title", config.game_title || defaultConfig.game_title],
+                        ["language_label", config.language_label || defaultConfig.language_label],
+                        ["progress_text", config.progress_text || defaultConfig.progress_text]
+                    ])
+                });
+            }
+
+            // Initialize Data SDK
+            if (window.dataSdk) {
+                const result = await window.dataSdk.init(dataHandler);
+                if (!result.isOk) {
+                    console.error("Failed to initialize data SDK");
+                }
+            }
+
+            // Initialize first card
+            displayCard(currentCardIndex);
+            updateProgressDisplay();
+        }
+
+        function displayCard(index) {
+            const card = flashcards[index];
+            document.getElementById('frontText').textContent = card.front;
+            document.getElementById('backText').textContent = card.back;
+            document.querySelector('.card-back .card-hint').textContent = card.hint;
+            document.getElementById('currentCard').textContent = index + 1;
+            document.getElementById('totalCards').textContent = flashcards.length;
+            
+            // Reset flip state
+            isFlipped = false;
+            document.getElementById('flashcard').classList.remove('flipped');
+            document.getElementById('correctBtn').disabled = true;
+            document.getElementById('incorrectBtn').disabled = true;
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').disabled = index === flashcards.length - 1;
+        }
+
+        function flipCard() {
+            const flashcard = document.getElementById('flashcard');
+            isFlipped = !isFlipped;
+            
+            if (isFlipped) {
+                flashcard.classList.add('flipped');
+                document.getElementById('correctBtn').disabled = false;
+                document.getElementById('incorrectBtn').disabled = false;
+            } else {
+                flashcard.classList.remove('flipped');
+                document.getElementById('correctBtn').disabled = true;
+                document.getElementById('incorrectBtn').disabled = true;
+            }
+        }
+
+        function nextCard() {
+            if (currentCardIndex < flashcards.length - 1) {
+                currentCardIndex++;
+                displayCard(currentCardIndex);
+            }
+        }
+
+        function previousCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                displayCard(currentCardIndex);
+            }
+        }
+
+        async function markCorrect() {
+            await updateProgress(true);
+            setTimeout(() => {
+                if (currentCardIndex < flashcards.length - 1) {
+                    nextCard();
+                }
+            }, 500);
+        }
+
+        async function markIncorrect() {
+            await updateProgress(false);
+            setTimeout(() => {
+                if (currentCardIndex < flashcards.length - 1) {
+                    nextCard();
+                }
+            }, 500);
+        }
+
+        async function updateProgress(isCorrect) {
+            if (!window.dataSdk) return;
+
+            const cardId = flashcards[currentCardIndex].id;
+            const currentProgress = userProgress.get(cardId) || { correct: 0, incorrect: 0 };
+            
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            
+            // Update counts
+            if (isCorrect) {
+                currentProgress.correct++;
+                totalCorrect++;
+            } else {
+                currentProgress.incorrect++;
+                totalIncorrect++;
+            }
+            
+            currentProgress.lastStudied = new Date().toISOString();
+            userProgress.set(cardId, currentProgress);
+
+            // Find existing record or create new one
+            const existingData = Array.from(userProgress.entries()).find(([id]) => id === cardId);
+            const recordData = {
+                card_id: cardId,
+                correct_count: currentProgress.correct,
+                incorrect_count: currentProgress.incorrect,
+                last_studied: currentProgress.lastStudied
+            };
+
+            let result;
+            // Check if we need to update existing record
+            const allData = await getAllStoredData();
+            const existingRecord = allData.find(record => record.card_id === cardId);
+            
+            if (existingRecord) {
+                result = await window.dataSdk.update({
+                    ...existingRecord,
+                    ...recordData
+                });
+            } else {
+                result = await window.dataSdk.create(recordData);
+            }
+
+            // Hide loading
+            document.getElementById('loading').classList.remove('show');
+
+            if (!result.isOk) {
+                console.error("Failed to save progress");
+            }
+
+            updateProgressDisplay();
+        }
+
+        async function getAllStoredData() {
+            // This is a helper function to get current data
+            // In a real implementation, you'd need to track this or have a way to query
+            return Array.from(userProgress.entries()).map(([cardId, progress]) => ({
+                card_id: cardId,
+                correct_count: progress.correct,
+                incorrect_count: progress.incorrect,
+                last_studied: progress.lastStudied,
+                __backendId: `backend_${cardId}` // This would be set by the actual backend
+            }));
+        }
+
+        function updateProgressDisplay() {
+            document.getElementById('correctCount').textContent = totalCorrect;
+            document.getElementById('incorrectCount').textContent = totalIncorrect;
+            
+            const total = totalCorrect + totalIncorrect;
+            const accuracy = total > 0 ? Math.round((totalCorrect / total) * 100) : 0;
+            document.getElementById('accuracyRate').textContent = accuracy + '%';
+            
+            // Update progress bar (based on cards studied)
+            const studiedCards = userProgress.size;
+            const progressPercent = (studiedCards / flashcards.length) * 100;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9957a223e357000b',t:'MTc2MTYyNTE1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
