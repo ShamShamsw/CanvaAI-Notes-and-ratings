@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animal Classification Game</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            color: #333;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            color: #4a5568;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            border-radius: 25px;
+            height: 20px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 25px;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .items-container {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 20px;
+            border: 3px dashed #cbd5e0;
+        }
+
+        .items-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .draggable-item {
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .draggable-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            border-color: #4299e1;
+        }
+
+        .draggable-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+            cursor: grabbing;
+        }
+
+        .item-emoji {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .item-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .categories-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .category-bucket {
+            background: #f7fafc;
+            border: 3px dashed #cbd5e0;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .category-bucket.drag-over {
+            border-color: #4299e1;
+            background: #ebf8ff;
+            transform: scale(1.02);
+        }
+
+        .category-bucket.correct-drop {
+            border-color: #48bb78;
+            background: #f0fff4;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .category-bucket.incorrect-drop {
+            border-color: #f56565;
+            background: #fff5f5;
+            animation: incorrectShake 0.6s ease;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .category-items {
+            display: grid;
+            gap: 10px;
+        }
+
+        .placed-item {
+            background: white;
+            border: 2px solid #48bb78;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .placed-item .item-emoji {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .placed-item .item-name {
+            font-size: 0.8rem;
+        }
+
+        .feedback-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feedback-message.correct {
+            background: #48bb78;
+        }
+
+        .feedback-message.incorrect {
+            background: #f56565;
+        }
+
+        .feedback-message.show {
+            opacity: 1;
+        }
+
+        .completion-message {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .completion-message.show {
+            display: block;
+            animation: celebrationBounce 0.8s ease;
+        }
+
+        @keyframes celebrationBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .reset-button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .reset-button:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .categories-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="game-container">
+   <div class="header">
+    <h1 class="game-title" id="gameTitle">Animal Classification Game</h1>
+    <p class="instructions" id="instructionsText">Drag each animal to its correct category bucket!</p>
+    <div class="progress-bar">
+     <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="score-display" id="scoreDisplay">
+     Score: 0 / 12
+    </div>
+   </div>
+   <div class="game-area">
+    <div class="items-container">
+     <h3 class="items-title">Animals to Sort</h3>
+     <div class="items-grid" id="itemsGrid"><!-- Items will be populated by JavaScript -->
+     </div>
+    </div>
+    <div class="categories-container">
+     <div class="category-bucket" data-category="mammals">
+      <div class="category-title" id="mammalsLabel">
+       Mammals
+      </div>
+      <div class="category-items" id="mammalsItems"></div>
+     </div>
+     <div class="category-bucket" data-category="reptiles">
+      <div class="category-title" id="reptilesLabel">
+       Reptiles
+      </div>
+      <div class="category-items" id="reptilesItems"></div>
+     </div>
+     <div class="category-bucket" data-category="amphibians">
+      <div class="category-title" id="amphibiansLabel">
+       Amphibians
+      </div>
+      <div class="category-items" id="amphibiansItems"></div>
+     </div>
+    </div>
+   </div>
+   <div class="completion-message" id="completionMessage">
+    <h2>🎉 Congratulations! 🎉</h2>
+    <p>You've successfully classified all the animals!</p><button class="reset-button" onclick="resetGame()">Play Again</button>
+   </div>
+  </div>
+  <div class="feedback-message" id="feedbackMessage"></div>
+  <script>
+        const defaultConfig = {
+            game_title: "Animal Classification Game",
+            instructions_text: "Drag each animal to its correct category bucket!",
+            mammals_label: "Mammals",
+            reptiles_label: "Reptiles",
+            amphibians_label: "Amphibians"
+        };
+
+        const animals = [
+            { name: "Dog", emoji: "🐕", category: "mammals" },
+            { name: "Cat", emoji: "🐱", category: "mammals" },
+            { name: "Elephant", emoji: "🐘", category: "mammals" },
+            { name: "Whale", emoji: "🐋", category: "mammals" },
+            { name: "Snake", emoji: "🐍", category: "reptiles" },
+            { name: "Lizard", emoji: "🦎", category: "reptiles" },
+            { name: "Turtle", emoji: "🐢", category: "reptiles" },
+            { name: "Crocodile", emoji: "🐊", category: "reptiles" },
+            { name: "Frog", emoji: "🐸", category: "amphibians" },
+            { name: "Toad", emoji: "🐸", category: "amphibians" },
+            { name: "Salamander", emoji: "🦎", category: "amphibians" },
+            { name: "Newt", emoji: "🦎", category: "amphibians" }
+        ];
+
+        let score = 0;
+        let totalItems = animals.length;
+        let placedItems = 0;
+
+        function initializeGame() {
+            const itemsGrid = document.getElementById('itemsGrid');
+            itemsGrid.innerHTML = '';
+            
+            // Shuffle animals for variety
+            const shuffledAnimals = [...animals].sort(() => Math.random() - 0.5);
+            
+            shuffledAnimals.forEach((animal, index) => {
+                const item = document.createElement('div');
+                item.className = 'draggable-item';
+                item.draggable = true;
+                item.dataset.category = animal.category;
+                item.dataset.name = animal.name;
+                item.innerHTML = `
+                    <span class="item-emoji">${animal.emoji}</span>
+                    <span class="item-name">${animal.name}</span>
+                `;
+                
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                
+                itemsGrid.appendChild(item);
+            });
+
+            // Setup drop zones
+            document.querySelectorAll('.category-bucket').forEach(bucket => {
+                bucket.addEventListener('dragover', handleDragOver);
+                bucket.addEventListener('drop', handleDrop);
+                bucket.addEventListener('dragenter', handleDragEnter);
+                bucket.addEventListener('dragleave', handleDragLeave);
+            });
+
+            updateScore();
+        }
+
+        function handleDragStart(e) {
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', '');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                e.currentTarget.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const bucket = e.currentTarget;
+            const draggingItem = document.querySelector('.dragging');
+            
+            if (!draggingItem) return;
+            
+            bucket.classList.remove('drag-over');
+            
+            const itemCategory = draggingItem.dataset.category;
+            const bucketCategory = bucket.dataset.category;
+            const isCorrect = itemCategory === bucketCategory;
+            
+            if (isCorrect) {
+                // Correct placement
+                bucket.classList.add('correct-drop');
+                setTimeout(() => bucket.classList.remove('correct-drop'), 600);
+                
+                // Move item to bucket
+                const placedItem = document.createElement('div');
+                placedItem.className = 'placed-item';
+                placedItem.innerHTML = draggingItem.innerHTML;
+                
+                const categoryItems = bucket.querySelector('.category-items');
+                categoryItems.appendChild(placedItem);
+                
+                draggingItem.remove();
+                score++;
+                placedItems++;
+                
+                showFeedback('Correct! Great job! 🎉', 'correct');
+            } else {
+                // Incorrect placement
+                bucket.classList.add('incorrect-drop');
+                setTimeout(() => bucket.classList.remove('incorrect-drop'), 600);
+                
+                showFeedback('Try again! Think about the animal\'s characteristics 🤔', 'incorrect');
+            }
+            
+            updateScore();
+            checkCompletion();
+        }
+
+        function showFeedback(message, type) {
+            const feedbackElement = document.getElementById('feedbackMessage');
+            feedbackElement.textContent = message;
+            feedbackElement.className = `feedback-message ${type} show`;
+            
+            setTimeout(() => {
+                feedbackElement.classList.remove('show');
+            }, 2000);
+        }
+
+        function updateScore() {
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            scoreDisplay.textContent = `Score: ${score} / ${totalItems}`;
+            
+            const progressFill = document.getElementById('progressFill');
+            const percentage = (score / totalItems) * 100;
+            progressFill.style.width = `${percentage}%`;
+        }
+
+        function checkCompletion() {
+            if (score === totalItems) {
+                setTimeout(() => {
+                    document.getElementById('completionMessage').classList.add('show');
+                }, 1000);
+            }
+        }
+
+        function resetGame() {
+            score = 0;
+            placedItems = 0;
+            
+            // Clear all placed items
+            document.querySelectorAll('.category-items').forEach(container => {
+                container.innerHTML = '';
+            });
+            
+            // Hide completion message
+            document.getElementById('completionMessage').classList.remove('show');
+            
+            // Reinitialize game
+            initializeGame();
+        }
+
+        async function onConfigChange(config) {
+            document.getElementById('gameTitle').textContent = config.game_title || defaultConfig.game_title;
+            document.getElementById('instructionsText').textContent = config.instructions_text || defaultConfig.instructions_text;
+            document.getElementById('mammalsLabel').textContent = config.mammals_label || defaultConfig.mammals_label;
+            document.getElementById('reptilesLabel').textContent = config.reptiles_label || defaultConfig.reptiles_label;
+            document.getElementById('amphibiansLabel').textContent = config.amphibians_label || defaultConfig.amphibians_label;
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["game_title", config.game_title || defaultConfig.game_title],
+                ["instructions_text", config.instructions_text || defaultConfig.instructions_text],
+                ["mammals_label", config.mammals_label || defaultConfig.mammals_label],
+                ["reptiles_label", config.reptiles_label || defaultConfig.reptiles_label],
+                ["amphibians_label", config.amphibians_label || defaultConfig.amphibians_label]
+            ]);
+        }
+
+        // Initialize the Element SDK
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig,
+                onConfigChange,
+                mapToCapabilities,
+                mapToEditPanelValues
+            });
+        }
+
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99566a90a4bba1d2',t:'MTc2MTYxMjM4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
