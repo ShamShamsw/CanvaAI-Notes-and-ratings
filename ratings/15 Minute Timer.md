@@ -30,4 +30,4 @@ The Canva AI-generated timer meets all functional requirements, counting down fr
 > Create a visually striking countdown timer with contemporary design. Start with a minimalist example featuring a 15-minute meditation timer with pulsing animation and subtle sound alerts. Use bold typography and a calming blue-to-purple gradient background.As a follow up ask me about: duration range needed, visual style preferences, timer features I want (sound alerts, visual effects, etc.), use case (meditation, cooking, presentations)
 
 **Code Provided by Canva AI:**  
-*(See project folder for full code.)*
+*(See basic-projects/15 Minute Timer/ folder for full code.)*
