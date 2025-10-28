@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar System Explorer</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0f0f23 70%, #000000 100%);
+            overflow: hidden;
+            color: white;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 20px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 10px 16px;
+            background: rgba(74, 144, 226, 0.9);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn:hover {
+            background: rgba(74, 144, 226, 1);
+            transform: translateY(-2px);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #space-canvas {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+
+        #space-canvas:active {
+            cursor: grabbing;
+        }
+
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 16px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            min-width: 250px;
+            max-width: 350px;
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #4a90e2;
+        }
+
+        .info-content {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .info-stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .navigation-help {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 16px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .help-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #4a90e2;
+        }
+
+        .celestial-body {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .celestial-body:hover {
+            transform: scale(1.1);
+        }
+
+        .orbit-path {
+            position: absolute;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .speed-slider {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .speed-label {
+            font-size: 12px;
+            min-width: 60px;
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <div class="header">
+    <div class="title" id="app-title">
+     Solar System Explorer
+    </div>
+    <div class="subtitle" id="welcome-message">
+     Navigate through space and discover orbital mechanics
+    </div>
+    <div class="controls"><button class="control-btn" id="play-btn">Start Simulation</button> <button class="control-btn" id="pause-btn">Pause</button> <button class="control-btn" id="reset-btn">Reset View</button>
+     <div class="speed-control"><span class="speed-label">Speed:</span> <input type="range" class="speed-slider" id="speed-slider" min="0.1" max="5" step="0.1" value="1"> <span class="speed-label" id="speed-display">1.0x</span>
+     </div>
+    </div>
+   </div>
+   <div class="canvas-container">
+    <div class="stars" id="stars"></div>
+    <canvas id="space-canvas"></canvas>
+   </div>
+   <div class="info-panel">
+    <div class="info-title" id="selected-body">
+     Click a celestial body
+    </div>
+    <div class="info-content" id="body-info">
+     Select Earth, Moon, or Mars to learn about their orbital mechanics, distances, and physical properties.
+    </div>
+   </div>
+   <div class="navigation-help">
+    <div class="help-title">
+     Navigation Controls
+    </div>
+    <div>
+     🖱️ Click &amp; Drag: Pan around
+    </div>
+    <div>
+     🔍 Mouse Wheel: Zoom in/out
+    </div>
+    <div>
+     🎯 Click Bodies: View details
+    </div>
+    <div>
+     ⏯️ Use controls to manage simulation
+    </div>
+   </div>
+  </div>
+  <script>
+        // Configuration object for editable features
+        const defaultConfig = {
+            app_title: "Solar System Explorer",
+            welcome_message: "Navigate through space and discover orbital mechanics",
+            play_button_text: "Start Simulation",
+            pause_button_text: "Pause",
+            reset_button_text: "Reset View",
+            primary_color: "#4a90e2",
+            background_color: "#1a1a2e",
+            text_color: "#ffffff",
+            surface_color: "#000000",
+            accent_color: "#74b9ff"
+        };
+
+        // Canvas and context
+        const canvas = document.getElementById('space-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Simulation state
+        let isRunning = false;
+        let animationId = null;
+        let time = 0;
+        let speed = 1;
+        let selectedBody = null;
+        
+        // Camera controls
+        let camera = {
+            x: 0,
+            y: 0,
+            zoom: 1,
+            targetZoom: 1
+        };
+        
+        let mouse = {
+            x: 0,
+            y: 0,
+            isDragging: false,
+            lastX: 0,
+            lastY: 0
+        };
+
+        // Celestial bodies data with realistic orbital mechanics
+        const celestialBodies = {
+            sun: {
+                name: "Sun",
+                radius: 30,
+                color: "#FDB813",
+                x: 0,
+                y: 0,
+                mass: 1.989e30,
+                info: {
+                    diameter: "1,392,700 km",
+                    mass: "1.989 × 10³⁰ kg",
+                    temperature: "5,778 K surface",
+                    facts: "The Sun contains 99.86% of the Solar System's mass and generates energy through nuclear fusion."
+                }
+            },
+            earth: {
+                name: "Earth",
+                radius: 8,
+                color: "#6B93D6",
+                orbitRadius: 200,
+                orbitSpeed: 0.02,
+                angle: 0,
+                mass: 5.972e24,
+                info: {
+                    diameter: "12,756 km",
+                    mass: "5.972 × 10²⁴ kg",
+                    distance: "149.6 million km from Sun",
+                    period: "365.25 days",
+                    facts: "Earth is the only known planet with life. Its orbit is nearly circular with an eccentricity of 0.0167."
+                }
+            },
+            moon: {
+                name: "Moon",
+                radius: 3,
+                color: "#C0C0C0",
+                orbitRadius: 25,
+                orbitSpeed: 0.25,
+                angle: 0,
+                parent: 'earth',
+                mass: 7.342e22,
+                info: {
+                    diameter: "3,475 km",
+                    mass: "7.342 × 10²² kg",
+                    distance: "384,400 km from Earth",
+                    period: "27.3 days",
+                    facts: "The Moon's gravity causes Earth's tides. It's gradually moving away from Earth at 3.8 cm per year."
+                }
+            },
+            mars: {
+                name: "Mars",
+                radius: 6,
+                color: "#CD5C5C",
+                orbitRadius: 300,
+                orbitSpeed: 0.011,
+                angle: Math.PI,
+                mass: 6.39e23,
+                info: {
+                    diameter: "6,792 km",
+                    mass: "6.39 × 10²³ kg",
+                    distance: "227.9 million km from Sun",
+                    period: "687 days",
+                    facts: "Mars has the largest volcano in the Solar System (Olympus Mons) and evidence of ancient water flows."
+                }
+            }
+        };
+
+        // Initialize canvas
+        function initCanvas() {
+            function resizeCanvas() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Generate stars
+            generateStars();
+        }
+
+        // Generate background stars
+        function generateStars() {
+            const starsContainer = document.getElementById('stars');
+            starsContainer.innerHTML = '';
+            
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = (Math.random() * 2 + 1) + 'px';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Update celestial body positions
+        function updatePositions() {
+            time += speed * 0.016; // Roughly 60fps
+            
+            Object.keys(celestialBodies).forEach(key => {
+                const body = celestialBodies[key];
+                
+                if (body.orbitRadius) {
+                    body.angle += body.orbitSpeed * speed * 0.016;
+                    
+                    if (body.parent) {
+                        // Moon orbits Earth
+                        const parent = celestialBodies[body.parent];
+                        body.x = parent.x + Math.cos(body.angle) * body.orbitRadius;
+                        body.y = parent.y + Math.sin(body.angle) * body.orbitRadius;
+                    } else {
+                        // Planets orbit Sun
+                        body.x = Math.cos(body.angle) * body.orbitRadius;
+                        body.y = Math.sin(body.angle) * body.orbitRadius;
+                    }
+                }
+            });
+        }
+
+        // Render the solar system
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Save context for camera transformations
+            ctx.save();
+            
+            // Apply camera transformations
+            ctx.translate(canvas.width / 2 + camera.x, canvas.height / 2 + camera.y);
+            ctx.scale(camera.zoom, camera.zoom);
+            
+            // Draw orbit paths
+            ctx.strokeStyle = 'rgba(74, 144, 226, 0.3)';
+            ctx.lineWidth = 1 / camera.zoom;
+            
+            // Earth's orbit
+            ctx.beginPath();
+            ctx.arc(0, 0, celestialBodies.earth.orbitRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Mars's orbit
+            ctx.beginPath();
+            ctx.arc(0, 0, celestialBodies.mars.orbitRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Moon's orbit around Earth
+            if (celestialBodies.earth.x !== undefined) {
+                ctx.beginPath();
+                ctx.arc(celestialBodies.earth.x, celestialBodies.earth.y, celestialBodies.moon.orbitRadius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Draw celestial bodies
+            Object.keys(celestialBodies).forEach(key => {
+                const body = celestialBodies[key];
+                
+                // Body glow effect
+                const gradient = ctx.createRadialGradient(body.x, body.y, 0, body.x, body.y, body.radius * 2);
+                gradient.addColorStop(0, body.color);
+                gradient.addColorStop(0.7, body.color + '80');
+                gradient.addColorStop(1, 'transparent');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(body.x, body.y, body.radius * 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Main body
+                ctx.fillStyle = body.color;
+                ctx.beginPath();
+                ctx.arc(body.x, body.y, body.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Selection highlight
+                if (selectedBody === key) {
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 3 / camera.zoom;
+                    ctx.beginPath();
+                    ctx.arc(body.x, body.y, body.radius + 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                // Body label
+                ctx.fillStyle = 'white';
+                ctx.font = `${12 / camera.zoom}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(body.name, body.x, body.y - body.radius - 15);
+            });
+            
+            ctx.restore();
+        }
+
+        // Animation loop
+        function animate() {
+            if (isRunning) {
+                updatePositions();
+            }
+            
+            // Smooth camera zoom
+            camera.zoom += (camera.targetZoom - camera.zoom) * 0.1;
+            
+            render();
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // Mouse and touch controls
+        function setupControls() {
+            canvas.addEventListener('mousedown', (e) => {
+                mouse.isDragging = true;
+                mouse.lastX = e.clientX;
+                mouse.lastY = e.clientY;
+                
+                // Check for body selection
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = (e.clientX - rect.left - canvas.width / 2 - camera.x) / camera.zoom;
+                const mouseY = (e.clientY - rect.top - canvas.height / 2 - camera.y) / camera.zoom;
+                
+                Object.keys(celestialBodies).forEach(key => {
+                    const body = celestialBodies[key];
+                    const distance = Math.sqrt((mouseX - body.x) ** 2 + (mouseY - body.y) ** 2);
+                    
+                    if (distance <= body.radius + 10) {
+                        selectedBody = key;
+                        updateInfoPanel();
+                    }
+                });
+            });
+            
+            canvas.addEventListener('mousemove', (e) => {
+                if (mouse.isDragging) {
+                    const deltaX = e.clientX - mouse.lastX;
+                    const deltaY = e.clientY - mouse.lastY;
+                    
+                    camera.x += deltaX;
+                    camera.y += deltaY;
+                    
+                    mouse.lastX = e.clientX;
+                    mouse.lastY = e.clientY;
+                }
+            });
+            
+            canvas.addEventListener('mouseup', () => {
+                mouse.isDragging = false;
+            });
+            
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+                camera.targetZoom = Math.max(0.1, Math.min(5, camera.targetZoom * zoomFactor));
+            });
+            
+            // Control buttons
+            document.getElementById('play-btn').addEventListener('click', () => {
+                isRunning = true;
+                updatePlayButton();
+            });
+            
+            document.getElementById('pause-btn').addEventListener('click', () => {
+                isRunning = false;
+                updatePlayButton();
+            });
+            
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                camera.x = 0;
+                camera.y = 0;
+                camera.zoom = 1;
+                camera.targetZoom = 1;
+                time = 0;
+                selectedBody = null;
+                updateInfoPanel();
+            });
+            
+            // Speed control
+            const speedSlider = document.getElementById('speed-slider');
+            const speedDisplay = document.getElementById('speed-display');
+            
+            speedSlider.addEventListener('input', (e) => {
+                speed = parseFloat(e.target.value);
+                speedDisplay.textContent = speed.toFixed(1) + 'x';
+            });
+        }
+
+        // Update info panel
+        function updateInfoPanel() {
+            const titleEl = document.getElementById('selected-body');
+            const infoEl = document.getElementById('body-info');
+            
+            if (selectedBody && celestialBodies[selectedBody]) {
+                const body = celestialBodies[selectedBody];
+                titleEl.textContent = body.name;
+                
+                let infoHTML = '';
+                Object.keys(body.info).forEach(key => {
+                    if (key === 'facts') {
+                        infoHTML += `<div style="margin-top: 12px; font-style: italic;">${body.info[key]}</div>`;
+                    } else {
+                        const label = key.charAt(0).toUpperCase() + key.slice(1);
+                        infoHTML += `<div class="info-stat"><span>${label}:</span><span>${body.info[key]}</span></div>`;
+                    }
+                });
+                
+                infoEl.innerHTML = infoHTML;
+            } else {
+                titleEl.textContent = 'Click a celestial body';
+                infoEl.innerHTML = 'Select Earth, Moon, or Mars to learn about their orbital mechanics, distances, and physical properties.';
+            }
+        }
+
+        // Update play button state
+        function updatePlayButton() {
+            const playBtn = document.getElementById('play-btn');
+            const config = window.elementSdk?.config || defaultConfig;
+            playBtn.textContent = isRunning ? config.pause_button_text || defaultConfig.pause_button_text : config.play_button_text || defaultConfig.play_button_text;
+        }
+
+        // Element SDK integration
+        async function onConfigChange(config) {
+            // Update text content
+            document.getElementById('app-title').textContent = config.app_title || defaultConfig.app_title;
+            document.getElementById('welcome-message').textContent = config.welcome_message || defaultConfig.welcome_message;
+            
+            // Update button text
+            const playBtn = document.getElementById('play-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            
+            resetBtn.textContent = config.reset_button_text || defaultConfig.reset_button_text;
+            updatePlayButton();
+            
+            // Update colors
+            const primaryColor = config.primary_color || defaultConfig.primary_color;
+            const backgroundColor = config.background_color || defaultConfig.background_color;
+            const textColor = config.text_color || defaultConfig.text_color;
+            const surfaceColor = config.surface_color || defaultConfig.surface_color;
+            const accentColor = config.accent_color || defaultConfig.accent_color;
+            
+            // Apply colors to elements
+            document.body.style.background = `radial-gradient(ellipse at center, ${backgroundColor} 0%, ${surfaceColor} 70%, #000000 100%)`;
+            document.body.style.color = textColor;
+            
+            // Update button colors
+            const buttons = document.querySelectorAll('.control-btn');
+            buttons.forEach(btn => {
+                btn.style.background = `${primaryColor}e6`;
+            });
+            
+            // Update info panel accent color
+            const infoPanels = document.querySelectorAll('.info-panel, .navigation-help');
+            infoPanels.forEach(panel => {
+                panel.style.borderColor = `${primaryColor}4d`;
+            });
+            
+            const infoTitles = document.querySelectorAll('.info-title, .help-title');
+            infoTitles.forEach(title => {
+                title.style.color = primaryColor;
+            });
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [
+                    {
+                        get: () => config.primary_color || defaultConfig.primary_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ primary_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.background_color || defaultConfig.background_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ background_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.text_color || defaultConfig.text_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ text_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.surface_color || defaultConfig.surface_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ surface_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.accent_color || defaultConfig.accent_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ accent_color: value });
+                            }
+                        }
+                    }
+                ],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["app_title", config.app_title || defaultConfig.app_title],
+                ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+                ["play_button_text", config.play_button_text || defaultConfig.play_button_text],
+                ["pause_button_text", config.pause_button_text || defaultConfig.pause_button_text],
+                ["reset_button_text", config.reset_button_text || defaultConfig.reset_button_text]
+            ]);
+        }
+
+        // Initialize everything
+        function init() {
+            initCanvas();
+            setupControls();
+            updateInfoPanel();
+            animate();
+            
+            // Initialize Element SDK
+            if (window.elementSdk) {
+                window.elementSdk.init({
+                    defaultConfig,
+                    onConfigChange,
+                    mapToCapabilities,
+                    mapToEditPanelValues
+                });
+            }
+        }
+
+        // Start the application
+        init();
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9957b63b84232331',t:'MTc2MTYyNTk3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
