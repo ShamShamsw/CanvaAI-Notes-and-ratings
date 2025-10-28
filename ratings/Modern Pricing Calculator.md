@@ -24,7 +24,7 @@ The Canva AI-generated Modern Pricing Calculator fulfills its purpose with an en
 ---
 
 **Prompt Given to Canva AI:**  
-> Create a modern, interactive pricing calculator with real-time updates and a professional design using a single HTML file.
+> Create a sleek, modern pricing calculator for my business. Start with an example for “Clarity Studio Photography” (sessions: $150-250/hr, editing: $50/image, albums: $100-300).Then ask me about: my business name/industry, services/products to include, adjustable pricing variables, preferred visual styleMake it visually striking with trendy design elements, fully mobile-responsive, and no non-functional buttons.
 
 **Code Provided by Canva AI:**  
 *(See basic-projects/Modern-Pricing-Calculator folder for full code.)*
