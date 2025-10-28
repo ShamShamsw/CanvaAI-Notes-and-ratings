@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biology Quiz Adventure</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f5e8 0%, #b8e6b8 50%, #87ceeb 100%);
+            min-height: 100%;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .floating-cells {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .cell {
+            position: absolute;
+            font-size: 20px;
+            animation: float 8s infinite linear;
+            opacity: 0.3;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .quiz-header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .quiz-title {
+            font-size: 2.5em;
+            color: #2d5016;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .welcome-text {
+            font-size: 1.2em;
+            color: #4a7c59;
+            margin-bottom: 20px;
+        }
+
+        .progress-plant {
+            font-size: 3em;
+            margin: 20px 0;
+            transition: all 0.5s ease;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .difficulty-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+            color: #2d5016;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .difficulty-btn.selected {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .name-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            font-size: 1.1em;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .quiz-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .question {
+            font-size: 1.3em;
+            color: #2d5016;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .answers {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .answer-btn {
+            padding: 15px 20px;
+            border: 2px solid #4CAF50;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #2d5016;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .answer-btn:hover {
+            background: rgba(76, 175, 80, 0.1);
+            transform: translateX(5px);
+        }
+
+        .answer-btn.correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .answer-btn.incorrect {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+
+        .next-btn {
+            background: linear-gradient(45deg, #2196F3, #4CAF50);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .completion-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 30px auto;
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .badge-text {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #8B4513;
+            margin-top: 5px;
+        }
+
+        .floating-leaves {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .leaf {
+            position: absolute;
+            font-size: 25px;
+            animation: fall 3s ease-in-out;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .score-display {
+            font-size: 1.5em;
+            color: #2d5016;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .stats {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: #4a7c59;
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="floating-cells" id="floatingCells"></div>
+  <div class="floating-leaves" id="floatingLeaves"></div>
+  <div class="container"><!-- Welcome Screen -->
+   <div id="welcomeScreen" class="quiz-header">
+    <h1 class="quiz-title" id="quizTitle">🧬 Biology Quiz Adventure 🌱</h1>
+    <p class="welcome-text" id="welcomeMessage">Welcome to your biology adventure! Test your knowledge and watch your plant grow! 🌿</p>
+    <div class="progress-plant" id="progressPlant">
+     🌱
+    </div><label for="studentName">Enter your name:</label> <input type="text" id="studentName" class="name-input" placeholder="Your name here" required>
+    <div class="difficulty-selector"><button class="difficulty-btn" data-level="easy">🌱 Easy</button> <button class="difficulty-btn selected" data-level="medium">🌿 Medium</button> <button class="difficulty-btn" data-level="hard">🌳 Hard</button>
+    </div><button class="start-btn" id="startQuiz">Start Quiz Adventure! 🚀</button>
+   </div><!-- Quiz Screen -->
+   <div id="quizScreen" class="hidden">
+    <div class="quiz-content">
+     <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+     </div>
+     <div class="progress-plant" id="quizProgressPlant">
+      🌱
+     </div>
+     <div class="question" id="questionText"></div>
+     <div class="answers" id="answersContainer"></div><button class="next-btn" id="nextBtn">Next Question 🌿</button>
+    </div>
+   </div><!-- Completion Screen -->
+   <div id="completionScreen" class="completion-screen hidden">
+    <div class="quiz-content">
+     <h2 id="completionMessage">🎉 Congratulations, Junior Biologist! 🎉</h2>
+     <div class="badge">
+      <div style="font-size: 2em;">
+       🔬🧪🧬
+      </div>
+      <div class="badge-text">
+       Junior<br>
+       Biologist
+      </div>
+     </div>
+     <div class="score-display" id="finalScore"></div>
+     <div class="progress-plant" id="finalPlant">
+      🌳
+     </div>
+     <div class="stats" id="statsDisplay"></div><button class="start-btn" id="restartBtn">Take Quiz Again! 🔄</button>
+    </div>
+   </div>
+   <div id="loadingIndicator" class="loading hidden">
+    <div>
+     🔬 Saving your results... 🧪
+    </div>
+   </div>
+  </div>
+  <script>
+        // Configuration object
+        const defaultConfig = {
+            quiz_title: "🧬 Biology Quiz Adventure 🌱",
+            welcome_message: "Welcome to your biology adventure! Test your knowledge and watch your plant grow! 🌿",
+            completion_message: "🎉 Congratulations, Junior Biologist! 🎉"
+        };
+
+        // Quiz data
+        const quizData = {
+            easy: [
+                {
+                    question: "🦠 What is the basic unit of life?",
+                    answers: ["Cell", "Atom", "Molecule", "Tissue"],
+                    correct: 0,
+                    emoji: "🦠"
+                },
+                {
+                    question: "🌱 What do plants need to make their own food?",
+                    answers: ["Sunlight and water", "Only water", "Only sunlight", "Soil only"],
+                    correct: 0,
+                    emoji: "🌱"
+                },
+                {
+                    question: "🐕 Which group do dogs belong to?",
+                    answers: ["Mammals", "Birds", "Fish", "Reptiles"],
+                    correct: 0,
+                    emoji: "🐕"
+                },
+                {
+                    question: "🧬 What carries genetic information in living things?",
+                    answers: ["DNA", "Water", "Air", "Food"],
+                    correct: 0,
+                    emoji: "🧬"
+                },
+                {
+                    question: "🌿 What process do plants use to make food from sunlight?",
+                    answers: ["Photosynthesis", "Breathing", "Eating", "Sleeping"],
+                    correct: 0,
+                    emoji: "🌿"
+                }
+            ],
+            medium: [
+                {
+                    question: "🦠 Which organelle controls the cell's activities?",
+                    answers: ["Nucleus", "Mitochondria", "Cell wall", "Vacuole"],
+                    correct: 0,
+                    emoji: "🦠"
+                },
+                {
+                    question: "🌱 What gas do plants release during photosynthesis?",
+                    answers: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"],
+                    correct: 0,
+                    emoji: "🌱"
+                },
+                {
+                    question: "🐧 What type of animal is a penguin?",
+                    answers: ["Bird", "Mammal", "Fish", "Amphibian"],
+                    correct: 0,
+                    emoji: "🐧"
+                },
+                {
+                    question: "🧫 What is the powerhouse of the cell?",
+                    answers: ["Mitochondria", "Nucleus", "Ribosome", "Chloroplast"],
+                    correct: 0,
+                    emoji: "🧫"
+                },
+                {
+                    question: "🦋 What is the process called when a caterpillar becomes a butterfly?",
+                    answers: ["Metamorphosis", "Evolution", "Adaptation", "Migration"],
+                    correct: 0,
+                    emoji: "🦋"
+                },
+                {
+                    question: "🌿 Which part of the plant absorbs water and nutrients?",
+                    answers: ["Roots", "Leaves", "Stem", "Flowers"],
+                    correct: 0,
+                    emoji: "🌿"
+                }
+            ],
+            hard: [
+                {
+                    question: "🧬 What are the building blocks of proteins?",
+                    answers: ["Amino acids", "Nucleotides", "Fatty acids", "Glucose"],
+                    correct: 0,
+                    emoji: "🧬"
+                },
+                {
+                    question: "🦠 In which organelle does photosynthesis occur?",
+                    answers: ["Chloroplast", "Mitochondria", "Nucleus", "Endoplasmic reticulum"],
+                    correct: 0,
+                    emoji: "🦠"
+                },
+                {
+                    question: "🐸 Which class of vertebrates can live both in water and on land?",
+                    answers: ["Amphibians", "Reptiles", "Fish", "Birds"],
+                    correct: 0,
+                    emoji: "🐸"
+                },
+                {
+                    question: "🧫 What is the process by which cells divide to create identical copies?",
+                    answers: ["Mitosis", "Meiosis", "Osmosis", "Diffusion"],
+                    correct: 0,
+                    emoji: "🧫"
+                },
+                {
+                    question: "🌱 What is the waxy layer that prevents water loss in plants called?",
+                    answers: ["Cuticle", "Epidermis", "Cortex", "Phloem"],
+                    correct: 0,
+                    emoji: "🌱"
+                },
+                {
+                    question: "🧬 How many chromosomes do humans typically have?",
+                    answers: ["46", "23", "48", "44"],
+                    correct: 0,
+                    emoji: "🧬"
+                },
+                {
+                    question: "🦠 What type of cell lacks a membrane-bound nucleus?",
+                    answers: ["Prokaryotic", "Eukaryotic", "Plant cell", "Animal cell"],
+                    correct: 0,
+                    emoji: "🦠"
+                }
+            ]
+        };
+
+        // Game state
+        let currentQuiz = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedDifficulty = 'medium';
+        let studentName = '';
+        let startTime = null;
+        let currentData = [];
+
+        // Data SDK handler
+        const dataHandler = {
+            onDataChanged(data) {
+                currentData = data;
+                // Update UI if needed
+            }
+        };
+
+        // Initialize floating background cells
+        function createFloatingCells() {
+            const container = document.getElementById('floatingCells');
+            const cells = ['🦠', '🔬', '🧫', '🧬'];
+            
+            setInterval(() => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = cells[Math.floor(Math.random() * cells.length)];
+                cell.style.left = Math.random() * 100 + '%';
+                cell.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                container.appendChild(cell);
+                
+                setTimeout(() => {
+                    if (cell.parentNode) {
+                        cell.parentNode.removeChild(cell);
+                    }
+                }, 10000);
+            }, 2000);
+        }
+
+        // Create floating leaves for celebration
+        function createFloatingLeaves() {
+            const container = document.getElementById('floatingLeaves');
+            const leaves = ['🍃', '🌿', '🍀'];
+            
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const leaf = document.createElement('div');
+                    leaf.className = 'leaf';
+                    leaf.textContent = leaves[Math.floor(Math.random() * leaves.length)];
+                    leaf.style.left = Math.random() * 100 + '%';
+                    leaf.style.animationDelay = Math.random() * 2 + 's';
+                    container.appendChild(leaf);
+                    
+                    setTimeout(() => {
+                        if (leaf.parentNode) {
+                            leaf.parentNode.removeChild(leaf);
+                        }
+                    }, 3000);
+                }, i * 200);
+            }
+        }
+
+        // Update progress plant
+        function updateProgressPlant() {
+            const progress = (currentQuestion + 1) / currentQuiz.length;
+            const plants = ['🌱', '🌿', '🌳'];
+            let plantIndex = 0;
+            
+            if (progress > 0.33) plantIndex = 1;
+            if (progress > 0.66) plantIndex = 2;
+            
+            document.getElementById('quizProgressPlant').textContent = plants[plantIndex];
+            document.getElementById('progressFill').style.width = (progress * 100) + '%';
+        }
+
+        // Display question
+        function displayQuestion() {
+            const question = currentQuiz[currentQuestion];
+            document.getElementById('questionText').innerHTML = `${question.emoji} ${question.question}`;
+            
+            const container = document.getElementById('answersContainer');
+            container.innerHTML = '';
+            
+            question.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = answer;
+                button.onclick = () => selectAnswer(index);
+                container.appendChild(button);
+            });
+            
+            document.getElementById('nextBtn').style.display = 'none';
+            updateProgressPlant();
+        }
+
+        // Handle answer selection
+        function selectAnswer(selectedIndex) {
+            const question = currentQuiz[currentQuestion];
+            const buttons = document.querySelectorAll('.answer-btn');
+            
+            buttons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === question.correct) {
+                    btn.classList.add('correct');
+                } else if (index === selectedIndex && index !== question.correct) {
+                    btn.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedIndex === question.correct) {
+                score++;
+            }
+            
+            document.getElementById('nextBtn').style.display = 'block';
+        }
+
+        // Next question or finish quiz
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < currentQuiz.length) {
+                displayQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        // Finish quiz and show results
+        async function finishQuiz() {
+            const endTime = new Date();
+            const timeTaken = Math.round((endTime - startTime) / 1000);
+            
+            // Show loading indicator
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            
+            // Save results to Data SDK
+            try {
+                const result = await window.dataSdk.create({
+                    student_name: studentName,
+                    difficulty_level: selectedDifficulty,
+                    score: score,
+                    total_questions: currentQuiz.length,
+                    completion_time: `${Math.floor(timeTaken / 60)}:${(timeTaken % 60).toString().padStart(2, '0')}`,
+                    completed_at: new Date().toISOString()
+                });
+                
+                if (!result.isOk) {
+                    console.error('Failed to save quiz results');
+                }
+            } catch (error) {
+                console.error('Error saving results:', error);
+            }
+            
+            // Hide loading indicator
+            document.getElementById('loadingIndicator').classList.add('hidden');
+            
+            // Show completion screen
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('completionScreen').classList.remove('hidden');
+            
+            // Update completion message
+            const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+            document.getElementById('completionMessage').textContent = config.completion_message || defaultConfig.completion_message;
+            
+            // Show final score and stats
+            const percentage = Math.round((score / currentQuiz.length) * 100);
+            document.getElementById('finalScore').innerHTML = `
+                🏆 Score: ${score}/${currentQuiz.length} (${percentage}%) 🏆
+            `;
+            
+            document.getElementById('finalPlant').textContent = percentage >= 80 ? '🌳' : percentage >= 60 ? '🌿' : '🌱';
+            
+            document.getElementById('statsDisplay').innerHTML = `
+                <div><strong>👤 Student:</strong> ${studentName}</div>
+                <div><strong>📊 Difficulty:</strong> ${selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1)}</div>
+                <div><strong>⏱️ Time:</strong> ${Math.floor(timeTaken / 60)}:${(timeTaken % 60).toString().padStart(2, '0')}</div>
+                <div><strong>📅 Completed:</strong> ${endTime.toLocaleDateString()}</div>
+            `;
+            
+            // Create floating leaves celebration
+            createFloatingLeaves();
+        }
+
+        // Start quiz
+        function startQuiz() {
+            studentName = document.getElementById('studentName').value.trim();
+            if (!studentName) {
+                // Show inline message instead of alert
+                const nameInput = document.getElementById('studentName');
+                nameInput.style.borderColor = '#f44336';
+                nameInput.placeholder = 'Please enter your name first!';
+                return;
+            }
+            
+            currentQuiz = [...quizData[selectedDifficulty]];
+            currentQuestion = 0;
+            score = 0;
+            startTime = new Date();
+            
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            
+            displayQuestion();
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            document.getElementById('completionScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            document.getElementById('studentName').value = '';
+            document.getElementById('progressPlant').textContent = '🌱';
+        }
+
+        // Element SDK configuration
+        async function onConfigChange(config) {
+            document.getElementById('quizTitle').textContent = config.quiz_title || defaultConfig.quiz_title;
+            document.getElementById('welcomeMessage').textContent = config.welcome_message || defaultConfig.welcome_message;
+            document.getElementById('completionMessage').textContent = config.completion_message || defaultConfig.completion_message;
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["quiz_title", config.quiz_title || defaultConfig.quiz_title],
+                ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+                ["completion_message", config.completion_message || defaultConfig.completion_message]
+            ]);
+        }
+
+        // Initialize application
+        async function init() {
+            // Initialize Data SDK
+            if (window.dataSdk) {
+                const initResult = await window.dataSdk.init(dataHandler);
+                if (!initResult.isOk) {
+                    console.error('Failed to initialize Data SDK');
+                }
+            }
+
+            // Initialize Element SDK
+            if (window.elementSdk) {
+                await window.elementSdk.init({
+                    defaultConfig,
+                    onConfigChange,
+                    mapToCapabilities,
+                    mapToEditPanelValues
+                });
+            }
+
+            // Set up event listeners
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    selectedDifficulty = btn.dataset.level;
+                });
+            });
+
+            document.getElementById('startQuiz').addEventListener('click', startQuiz);
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            document.getElementById('restartBtn').addEventListener('click', restartQuiz);
+
+            // Start floating cells animation
+            createFloatingCells();
+
+            // Apply initial config
+            await onConfigChange(defaultConfig);
+        }
+
+        // Start the application
+        init();
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'995d5c9dc20413f9',t:'MTc2MTY4NTIxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
