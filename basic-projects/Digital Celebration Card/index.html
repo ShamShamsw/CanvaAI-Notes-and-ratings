@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Celebration Card</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .card-container {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #87CEEB 0%, #FFB6C1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+        }
+
+        .celebration-type {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
+
+        .main-message {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .recipient-name {
+            font-size: 36px;
+            color: #e74c3c;
+            margin: 20px 0;
+            font-style: italic;
+        }
+
+        .personal-message {
+            font-size: 20px;
+            color: #555;
+            margin-top: 30px;
+            line-height: 1.4;
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+        }
+
+        .confetti-piece {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100%) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100% + 600px)) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #FFD700;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sparkle 1.5s ease-out forwards;
+        }
+
+        @keyframes sparkle {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1) rotate(180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .balloon {
+            position: absolute;
+            pointer-events: none;
+            animation: balloon-float 4s ease-out forwards;
+        }
+
+        @keyframes balloon-float {
+            0% {
+                transform: translateY(100%) scale(0);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+                transform: translateY(80%) scale(1);
+            }
+            100% {
+                transform: translateY(-20%) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        .heart {
+            position: absolute;
+            pointer-events: none;
+            animation: heart-rise 2s ease-out forwards;
+        }
+
+        @keyframes heart-rise {
+            0% {
+                transform: translateY(0) scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-50px) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(0);
+                opacity: 0;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <main class="card-container" id="cardContainer">
+   <div class="card" id="celebrationCard">
+    <div class="celebration-type" id="celebrationType">
+     Birthday
+    </div>
+    <div class="main-message" id="mainMessage">
+     Happy Birthday!
+    </div>
+    <div class="recipient-name" id="recipientName">
+     Emma
+    </div>
+    <div class="personal-message" id="personalMessage">
+     Hope your day is amazing!
+    </div>
+   </div>
+   <div class="click-hint">
+    Click anywhere to celebrate! 🎉
+   </div>
+  </main>
+  <script>
+        const defaultConfig = {
+            recipient_name: "Emma",
+            celebration_type: "Birthday",
+            main_message: "Happy Birthday!",
+            personal_message: "Hope your day is amazing!",
+            background_color: "#87CEEB",
+            accent_color: "#FFB6C1",
+            text_color: "#2c3e50",
+            name_color: "#e74c3c",
+            font_family: "Georgia"
+        };
+
+        let config = {};
+        let clickCount = 0;
+
+        async function onConfigChange(newConfig) {
+            config = newConfig;
+            
+            const recipientNameEl = document.getElementById('recipientName');
+            const celebrationTypeEl = document.getElementById('celebrationType');
+            const mainMessageEl = document.getElementById('mainMessage');
+            const personalMessageEl = document.getElementById('personalMessage');
+            const cardContainer = document.getElementById('cardContainer');
+            
+            if (recipientNameEl) {
+                recipientNameEl.textContent = config.recipient_name || defaultConfig.recipient_name;
+                recipientNameEl.style.color = config.name_color || defaultConfig.name_color;
+            }
+            
+            if (celebrationTypeEl) {
+                celebrationTypeEl.textContent = config.celebration_type || defaultConfig.celebration_type;
+            }
+            
+            if (mainMessageEl) {
+                mainMessageEl.textContent = config.main_message || defaultConfig.main_message;
+                mainMessageEl.style.color = config.text_color || defaultConfig.text_color;
+            }
+            
+            if (personalMessageEl) {
+                personalMessageEl.textContent = config.personal_message || defaultConfig.personal_message;
+            }
+            
+            if (cardContainer) {
+                const bgColor = config.background_color || defaultConfig.background_color;
+                const accentColor = config.accent_color || defaultConfig.accent_color;
+                cardContainer.style.background = `linear-gradient(135deg, ${bgColor} 0%, ${accentColor} 100%)`;
+            }
+            
+            const customFont = config.font_family || defaultConfig.font_family;
+            document.body.style.fontFamily = `${customFont}, serif`;
+        }
+
+        function createConfetti(x, y) {
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+            
+            for (let i = 0; i < 15; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = x + 'px';
+                confetti.style.top = y + 'px';
+                
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDelay = Math.random() * 0.5 + 's';
+                piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                
+                confetti.appendChild(piece);
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                }, 4000);
+            }
+        }
+
+        function createSparkles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = (x + Math.random() * 40 - 20) + 'px';
+                sparkle.style.top = (y + Math.random() * 40 - 20) + 'px';
+                sparkle.style.animationDelay = Math.random() * 0.3 + 's';
+                
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    if (sparkle.parentNode) {
+                        sparkle.parentNode.removeChild(sparkle);
+                    }
+                }, 2000);
+            }
+        }
+
+        function createBalloon(x, y) {
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon';
+            balloon.style.left = x + 'px';
+            balloon.style.top = y + 'px';
+            balloon.innerHTML = '🎈';
+            balloon.style.fontSize = '30px';
+            balloon.style.animationDelay = Math.random() * 0.5 + 's';
+            
+            document.body.appendChild(balloon);
+            
+            setTimeout(() => {
+                if (balloon.parentNode) {
+                    balloon.parentNode.removeChild(balloon);
+                }
+            }, 4500);
+        }
+
+        function createHearts(x, y) {
+            const hearts = ['💖', '💕', '💗', '💝'];
+            
+            for (let i = 0; i < 3; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.style.left = (x + Math.random() * 60 - 30) + 'px';
+                heart.style.top = y + 'px';
+                heart.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
+                heart.style.fontSize = '20px';
+                heart.style.animationDelay = (i * 0.2) + 's';
+                
+                document.body.appendChild(heart);
+                
+                setTimeout(() => {
+                    if (heart.parentNode) {
+                        heart.parentNode.removeChild(heart);
+                    }
+                }, 2500);
+            }
+        }
+
+        function handleClick(event) {
+            const x = event.clientX;
+            const y = event.clientY;
+            
+            clickCount++;
+            
+            createConfetti(x, y);
+            createSparkles(x, y);
+            
+            if (clickCount % 3 === 0) {
+                createBalloon(x, y);
+            }
+            
+            if (clickCount % 4 === 0) {
+                createHearts(x, y);
+            }
+        }
+
+        document.addEventListener('click', handleClick);
+
+        // Initialize SDK
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig: defaultConfig,
+                onConfigChange: onConfigChange,
+                mapToCapabilities: (config) => ({
+                    recolorables: [
+                        {
+                            get: () => config.background_color || defaultConfig.background_color,
+                            set: (value) => {
+                                config.background_color = value;
+                                window.elementSdk.setConfig({ background_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.accent_color || defaultConfig.accent_color,
+                            set: (value) => {
+                                config.accent_color = value;
+                                window.elementSdk.setConfig({ accent_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.text_color || defaultConfig.text_color,
+                            set: (value) => {
+                                config.text_color = value;
+                                window.elementSdk.setConfig({ text_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.name_color || defaultConfig.name_color,
+                            set: (value) => {
+                                config.name_color = value;
+                                window.elementSdk.setConfig({ name_color: value });
+                            }
+                        }
+                    ],
+                    borderables: [],
+                    fontEditable: {
+                        get: () => config.font_family || defaultConfig.font_family,
+                        set: (value) => {
+                            config.font_family = value;
+                            window.elementSdk.setConfig({ font_family: value });
+                        }
+                    },
+                    fontSizeable: undefined
+                }),
+                mapToEditPanelValues: (config) => new Map([
+                    ["recipient_name", config.recipient_name || defaultConfig.recipient_name],
+                    ["celebration_type", config.celebration_type || defaultConfig.celebration_type],
+                    ["main_message", config.main_message || defaultConfig.main_message],
+                    ["personal_message", config.personal_message || defaultConfig.personal_message]
+                ])
+            });
+        }
+
+        // Initial render
+        onConfigChange(defaultConfig);
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99565bac8326a1d2',t:'MTc2MTYxMTc3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
